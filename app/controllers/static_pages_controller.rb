@@ -2,7 +2,7 @@ class StaticPagesController < ApplicationController
   require 'rest-client'
   BASE_URL = 'https://graph.facebook.com/v2.6/'
   AD_ACCOUNT_ID = '1219093434772270'
-  ACCESS_TOKEN = 'CAANNAsbKK4kBAIauk7N9xmJf26DEJPvwxU6cMePLMpJ4Gh81UeiDm7PAaOMGhNWqI8KZB1ZBXu7VdEtnnWFgXwg5CmzsUyWUghgRMZCLR241aqafzXcYFQZANUgBbZBHtbVCik2T5HhlZCL1sq74qDvyfKhUup9VXQzrgLLRq7NtQJoHUp2QQy8jjASXYabnLaQByZCg9vxypRb7w7YRZCJq'
+  ACCESS_TOKEN = 'CAANNAsbKK4kBABySjncnkR5Oh20s6Kg48Bk2Qv5k8TKtJM8PJ9dWlDr0KZCDPfkFp7jDofSCjuTOsZAgq7HheApj3MVFTw7h81SOXfTZBS5wp7nQawYHO3ToIPtBhl2jlmkNNCFZB8uKN06cmHFxPitpmUteEhi1cAjHFrWXkoTNY2iNoqlm4pI72YfpdVAMzNNBixV3ZB1DqeBn4CFht'
   FIELDS = ['name']
 
   # accounts = Net::HTTP.get(URI.parse("https://graph.facebook.com/v2.5/10152789234082798/adaccounts?access_token=#{ACCESS_TOKEN}"))
