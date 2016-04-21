@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>The Social Route</title>
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+    <%= csrf_meta_tags %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+  </head>
+  <body>
+    <div class="page-flexbox-wrapper">
+      <% unless current_user %>
+        <header>
+          <nav class="light-blue lighten-1" role="navigation">
+            <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">The Social Route</a>
+              <ul class="right hide-on-med-and-down">
+                <li><a href="/dashboard"><i class="material-icons">dashboard</i></a></li>
+                <li><a href="/users/edit"><i class="material-icons">person</i></a></li>
+                <li><%= link_to('Logout', destroy_user_session_path, :method => :delete) %></li>
+              </ul>
+              <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+            </div>
+          </nav>
+        </header>
+      <% end %>
+      <main>
+        <div class='container'>
+          <%= custom_bootstrap_flash %>
+          <%= yield %>
+        </div>
+      </main>
+      <footer class="page-footer grey darken-2">
+        <div class="container">
+          <div class="row">
+            <div class="col s12">
+              <h5 class="white-text">Questions</h5>
+              <p class="grey-text text-lighten-4">
+                If you have any questions please reach out to Michael Pierce<br>
+                <a class='orange-text' href='tel:720-387-9691'>Phone</a> /
+                <a class='orange-text' href='mailto:matchmike1313@gmail.com'>E-Mail</a>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-copyright">
+          <div class="container">
+          © 2016 The Social Route
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

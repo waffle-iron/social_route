@@ -1,0 +1,3 @@
+@thesocialroute = angular.module 'thesocialroute',
+  [
+  ]

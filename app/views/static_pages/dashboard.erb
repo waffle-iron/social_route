@@ -1,0 +1,20 @@
+<div class="row">
+  <% @adaccounts.each do |account| %>
+    <div class="col s6">
+      <div class="card white">
+        <div class="card-content grey-text">
+          <span class="card-title"><%= account['name'] %></span>
+          <p>
+            Status: <%= account_status_codes(account['account_status']) %><br>
+            <!-- Current Status: <span class="green-text text-darken-2">Ok</span><br> -->
+            Active Campaigns: X
+          </p>
+        </div>
+        <div class="card-action">
+          <a href="#">Overview</a>
+          <a href="#">Reporting</a>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
