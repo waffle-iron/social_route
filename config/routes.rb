@@ -9,7 +9,9 @@ Rails.application.routes.draw do
   end
 
   match '/dashboard', to: 'static_pages#dashboard', via: 'get'
+  match '/overview', to: 'static_pages#overview', via: 'get'
   resources :users
+
 
 
 

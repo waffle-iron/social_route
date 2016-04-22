@@ -1,3 +1,8 @@
+<% provide(:title, "Dashboard") %>
+<center>
+  <h1>Dashboard</h1>
+</center>
+
 <div class="row">
   <% @adaccounts.each do |account| %>
     <div class="col s6">
@@ -11,8 +16,7 @@
           </p>
         </div>
         <div class="card-action">
-          <a href="#">Overview</a>
-          <a href="#">Reporting</a>
+          <%= link_to "Overview", overview_path(:account_id => account['id'], :account_name => account['name']) %>
         </div>
       </div>
     </div>
