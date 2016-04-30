@@ -22,25 +22,25 @@ module ApplicationHelper
 
   def account_status_codes(code)
     case code
-    when 1
+    when "1"
       "ACTIVE"
-    when 2
+    when "2"
       "DISABLED"
-    when 3
+    when "3"
       "UNSETTLED"
-    when 7
+    when "7"
       "PENDING_RISK_REVIEW"
-    when 9
+    when "9"
       "IN_GRACE_PERIOD"
-    when 100
+    when "100"
       "PENDING_CLOSURE"
-    when 101
+    when "101"
       "CLOSED"
-    when 102
+    when "102"
       "PENDING_SETTLEMENT"
-    when 201
+    when "201"
       "ANY_ACTIVE"
-    when 202
+    when "202"
       "ANY_CLOSED"
     end
   end

@@ -11,7 +11,33 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160415012601) do
+ActiveRecord::Schema.define(version: 20160430193327) do
+
+  create_table "accounts", force: :cascade do |t|
+    t.string   "account_id"
+    t.string   "account_status"
+    t.float    "age"
+    t.string   "amount_spent"
+    t.string   "name"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+  end
+
+  create_table "campaigns", force: :cascade do |t|
+    t.string   "account_id"
+    t.string   "configured_status"
+    t.datetime "created_time"
+    t.string   "effective_status"
+    t.string   "name"
+    t.string   "objective"
+    t.datetime "start_time"
+    t.string   "status"
+    t.datetime "stop_time"
+    t.datetime "updated_time"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+    t.string   "campaign_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false

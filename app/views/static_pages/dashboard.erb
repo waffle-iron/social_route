@@ -8,15 +8,15 @@
     <div class="col s6">
       <div class="card white">
         <div class="card-content grey-text">
-          <span class="card-title"><%= account['name'] %></span>
+          <span class="card-title"><%= account.name %></span>
           <p>
-            Status: <%= account_status_codes(account['account_status']) %><br>
+            Status: <%= account_status_codes(account.account_status) %><br>
             <!-- Current Status: <span class="green-text text-darken-2">Ok</span><br> -->
-            Active Campaigns: X
           </p>
         </div>
         <div class="card-action">
-          <%= link_to "Overview", overview_path(:account_id => account['id'], :account_name => account['name']) %>
+          <%= link_to "Overview", overview_path(:account_id => account.account_id) %>
+          <%= link_to "Reporting", reporting_path(:account_id => account.account_id) %>
         </div>
       </div>
     </div>
