@@ -2,14 +2,7 @@ class StaticPagesController < ApplicationController
   require 'rest-client'
   BASE_URL = 'https://graph.facebook.com/v2.6/'
   AD_ACCOUNT_ID = '1219093434772270'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBADrVIt4y2bCl39ZCZBUGJc3CPofeIqZCa4CW0brSnz4GRzZBQZAMzZBOR77vllunzB4cQpwalB6ZBW8hIe2H8ZAojdbmNiaoQC14XBtqIe7oIYweadOd9aCcNb87ZCZCtmUivbyHd23cyMNHHGmVpV3eUV2DegTWmljgZDZD'
-
-  # accounts = Net::HTTP.get(URI.parse("https://graph.facebook.com/v2.5/10152789234082798/adaccounts?access_token=#{ACCESS_TOKEN}"))
-
-  adsets = Net::HTTP.get(URI.parse("https://graph.facebook.com/v2.5/act_#{AD_ACCOUNT_ID}/adsets?access_token=#{ACCESS_TOKEN}&fields=['name']"))
-  # account_insights = Net::HTTP.get(URI.parse("https://graph.facebook.com/v2.5/act_#{AD_ACCOUNT_ID}/insights?access_token=#{ACCESS_TOKEN}"))
-
-  # campaigns = Net::HTTP.get(URI.parse("https://graph.facebook.com/v2.5/act_#{AD_ACCOUNT_ID}/campaigns/?access_token=#{ACCESS_TOKEN}&fields=#{FIELDS}"))
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAClSAtcltIwvAZCMNSb6kvE69zfV6ld1ENFUh2wUtY7nTXK5ZAdAzmhOsftZAmEUMRTrsHzkMMTpOGTj9MtQnIjzsA471paMeg7cgA9GCw9fBOmDMJ3FpOOXefY66PZAJFvGh8CsZBkJnlTOIqArla7ExvZAHx0AZDZD'
 
   def dashboard
     @adaccounts = Account.all
@@ -22,6 +15,28 @@ class StaticPagesController < ApplicationController
 
   def reporting
     @account = Account.find_by_account_id(params['account_id'])
+
+    respond_to do |format|
+      format.html
+      format.json do
+        impressions = Ad.where(account_id:1219093434772270).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
+        reach = Ad.where(account_id:1219093434772270).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
+        total_actions = Ad.where(account_id:1219093434772270).group(:objective).sum(:total_actions).map{|k,v| {objective: k, total_actions: v}}
+
+        final_data = impressions + reach + total_actions
+        json_data = final_data.group_by{|h| h[:objective]}.map{|k,v| v.reduce(:merge)}
+
+        placement = Campaign.where(account_id:1219093434772270).group(:placement).sum(:cpm).map{|k,v| {placement: k, cpm: v}}
+
+        audiences = []
+
+        Campaign.where(account_id:1219093434772270).group(:name, :objective).average(:cpm).each do |group|
+          audiences.push(objective: group[0][1], audience: group[0][0].split('|')[1].strip, cpm: group[1])
+        end
+
+        render json: {overview: json_data, cpm_placement: placement, audiences: audiences, demographics: 'demographics'}.to_json
+      end
+    end
   end
 
   private

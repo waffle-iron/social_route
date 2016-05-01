@@ -8,7 +8,6 @@
 </center>
 
 <div class='container'>
-
   <div class="row">
     <div class="col s12 m12">
       <div class="card white darken-1">
@@ -20,25 +19,21 @@
                 <th>Campaign Objective</th>
                 <th class='right-align'>Impressions</th>
                 <th class='right-align'>Reach</th>
-                <th class='right-align'>Result Rate</th>
+                <th class='right-align'>Results</th>
                 <th class='right-align'>CPM</th>
+                <th class='right-align'>CPR</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>WC | 2,200,000 | 2016</td>
-                <td class='right-align'>578,979</td>
-                <td class='right-align'>233,708</td>
-                <td class='right-align'>0.07%</td>
-                <td class='right-align'>$3.59</td>
-              </tr>
-              <tr>
-                <td>WC | 1,900,000 | 2016</td>
-                <td class='right-align'>568,887</td>
-                <td class='right-align'>234,890</td>
-                <td class='right-align'>0.08%</td>
-                <td class='right-align'>$3.48</td>
-              </tr>
+
+                <tr>
+                  <td></td>
+                  <td class='right-align'></td>
+                  <td class='right-align'></td>
+                  <td class='right-align'></td>
+                  <td class='right-align'></td>
+                </tr>
+
             </tbody>
           </table>
         </div>
@@ -62,9 +57,9 @@
     <div class="col s12 m12">
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Audiances: 12/31/15 - 4/30/16</span>
+          <span class="card-title">Audiences: 12/31/15 - 4/30/16</span>
           <br><br>
-          <div id="audiances"></div>
+          <div id="audiences"></div>
         </div>
       </div>
     </div>
@@ -117,7 +112,7 @@ function drawChart() {
     colors: ['#1b9e77', '#d95f02', '#7570b3']
   };
 
-  var chart = new google.charts.Bar(document.getElementById('audiances'));
+  var chart = new google.charts.Bar(document.getElementById('audiences'));
 
   chart.draw(data, google.charts.Bar.convertOptions(options));
 }

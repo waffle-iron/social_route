@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160430193327) do
+ActiveRecord::Schema.define(version: 20160501025708) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "account_id"
@@ -23,20 +23,45 @@ ActiveRecord::Schema.define(version: 20160430193327) do
     t.datetime "updated_at",     null: false
   end
 
+  create_table "ads", force: :cascade do |t|
+    t.string   "date_start"
+    t.string   "date_stop"
+    t.string   "account_id"
+    t.string   "ad_id"
+    t.string   "ad_name"
+    t.string   "campaign_id"
+    t.string   "adset_id"
+    t.string   "objective"
+    t.integer  "total_actions"
+    t.string   "impressions"
+    t.float    "spend"
+    t.float    "frequency"
+    t.integer  "reach"
+    t.float    "cpm"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+  end
+
   create_table "campaigns", force: :cascade do |t|
     t.string   "account_id"
-    t.string   "configured_status"
     t.datetime "created_time"
     t.string   "effective_status"
     t.string   "name"
     t.string   "objective"
     t.datetime "start_time"
-    t.string   "status"
     t.datetime "stop_time"
-    t.datetime "updated_time"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
     t.string   "campaign_id"
+    t.string   "placement"
+    t.integer  "spend"
+    t.float    "frequency"
+    t.string   "impressions"
+    t.float    "cpc"
+    t.float    "cpm"
+    t.float    "cpp"
+    t.integer  "reach"
+    t.integer  "total_actions"
   end
 
   create_table "users", force: :cascade do |t|
