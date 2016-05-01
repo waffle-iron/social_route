@@ -12,8 +12,12 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require jquery.turbolinks
 //= require turbolinks
 //= require angular
 //= require angular-resource
+//= require angular-google-chart.min.js
+//= require lodash.min.js
 //= require toastr
+//= require modules
 //= require_tree .

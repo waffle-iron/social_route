@@ -1,3 +1,7 @@
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
 body {
   background-color: #EEEEEE;'
   display: flex;
@@ -13,4 +17,8 @@ body {
 
 main {
   flex: 1 0 auto;
+}
+
+.material-icons active {
+  position: relative; top: 20px !important;
 }

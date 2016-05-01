@@ -1,4 +1,5 @@
-<% provide(:title, "Overview: #{@account_name}") %>
+<% provide(:title, "Overview: #{@account.name}") %>
+
 <center>
   <h1>
     <%= @account.name %>
@@ -7,113 +8,62 @@
   </h1>
 </center>
 
-<div class='container'>
-  <div class="row">
-    <div class="col s12 m12">
-      <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Campaign Overview: 12/31/15 - 4/30/16</span>
-          <table class="bordered responsive-table highlight">
-            <thead>
-              <tr>
-                <th>Campaign Objective</th>
-                <th class='right-align'>Impressions</th>
-                <th class='right-align'>Reach</th>
-                <th class='right-align'>Results</th>
-                <th class='right-align'>CPM</th>
-                <th class='right-align'>CPR</th>
-              </tr>
-            </thead>
-            <tbody>
-
+<div ng-controller='ReportingCtrl'>
+  <div class=''>
+    <div class="row">
+      <div class="col s12 m12">
+        <div class="card white darken-1">
+          <div class="card-content grey-text text-darken-1">
+            <span class="card-title">Campaign Overview: 12/31/15 - 4/30/16</span>
+            <table class="bordered responsive-table highlight">
+              <thead>
                 <tr>
-                  <td></td>
-                  <td class='right-align'></td>
-                  <td class='right-align'></td>
-                  <td class='right-align'></td>
-                  <td class='right-align'></td>
+                  <th>Objective</th>
+                  <th class='right-align'>Impressions</th>
+                  <th class='right-align'>Reach</th>
+                  <th class='right-align'>Results</th>
+                  <th class='right-align'>CPM</th>
+                  <th class='right-align'>CPR</th>
                 </tr>
-
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <tr ng-repeat='data in reporting.overview'>
+                  <td>{{data.objective}}</td>
+                  <td class='right-align'>{{data.impressions | number:0}}</td>
+                  <td class='right-align'>{{data.reach | number:0}}</td>
+                  <td class='right-align'>{{data.total_actions | number:0}}</td>
+                  <td class='right-align'>{{data.CPM | currency}}</td>
+                  <td class='right-align'>{{data.CRR | currency}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col s12 m12">
-      <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <span class="card-title">CPM by Placement: 12/31/15 - 4/30/16</span>
-          <br><br>
-          <div id="chart_div"></div>
+    <div class="row">
+      <div class="col s12 m12">
+        <div class="card white darken-1">
+          <div class="card-content grey-text text-darken-1">
+            <span class="card-title">CPM by Placement: 12/31/15 - 4/30/16</span>
+            <br><br>
+             <div google-chart chart='cpmChart' style='height: 400px;'></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col s12 m12">
-      <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Audiences: 12/31/15 - 4/30/16</span>
-          <br><br>
-          <div id="audiences"></div>
+    <div class="row">
+      <div class="col s12 m12">
+        <div class="card white darken-1">
+          <div class="card-content grey-text text-darken-1">
+            <span class="card-title">Audiences: 12/31/15 - 4/30/16</span>
+            <br><br>
+            <div google-chart chart='audiencesChart' style='height: 400px;'></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script>
-  google.charts.load('current', {'packages':['bar']});
-  google.charts.setOnLoadCallback(drawChart);
-
-  function drawChart() {
-    var data = google.visualization.arrayToDataTable([
-      ['CPM', 'Video Views', 'Page Post Engagement', 'Clicks to Website'],
-      ['Instagram', 1000, 400, 200],
-      ['Audiance Network', 1170, 460, 250],
-      ['Desktop Right Column', 660, 1120, 300],
-      ['Desktop Newsfeed', 1030, 540, 350],
-      ['Mobile Newsfeed', 1030, 540, 350]
-    ]);
-
-    var options = {
-      bars: 'vertical',
-      vAxis: {format: 'decimal'},
-      height: 400,
-      colors: ['#1b9e77', '#d95f02', '#7570b3']
-    };
-
-    var chart = new google.charts.Bar(document.getElementById('chart_div'));
-
-    chart.draw(data, google.charts.Bar.convertOptions(options));
-
-  }
-</script>
-
-<script>
-google.charts.setOnLoadCallback(drawChart);
-function drawChart() {
-  var data = google.visualization.arrayToDataTable([
-    ['Campaign Objective', 'Audience 1', 'Audience 2', 'Audience 3'],
-    ['Video Views', 1000, 400, 200],
-    ['Page Post Engagement', 1170, 460, 250],
-    ['Clicks to Website', 660, 1120, 300]
-  ]);
-
-  var options = {
-    bars: 'horizontal', // Required for Material Bar Charts.
-    hAxis: {format: 'decimal'},
-    height: 400,
-    colors: ['#1b9e77', '#d95f02', '#7570b3']
-  };
-
-  var chart = new google.charts.Bar(document.getElementById('audiences'));
-
-  chart.draw(data, google.charts.Bar.convertOptions(options));
-}
-</script>

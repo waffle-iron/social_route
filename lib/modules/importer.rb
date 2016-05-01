@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAE9WMgu19Ej7AmlpzZA06xfGW1IKrVikGYx6BwMjQj1r9ZBkQA6asFY9ms0yXQZCa8uS306tQiTUwrEM0BWOXzxFFZAjKhu09T9JjnDdmScZAjasJpSD5LMzeMY0Kpf24XAefJxmoszOgWqY162nmOAFu0DcZBmwZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAMNdWL1XsSEYiqSMZBBrztHb2LIOhkSxJ4AsgAO6kGSwkwt7SASsfRe07ROxZAeOVmh8UbZBCQ7dnwvqAUjLdYEEPNN7pkrH9khC3ZCeUb0T9uUAR96oPUmZAT2s6r1XZCKpz7IlPfn85d7ptutwgXyJlREmA80gZDZD'
 
 
   def self.import
@@ -11,17 +11,17 @@ module Importer
     puts "|                       Wipe Current Database                      |"
     puts "--------------------------------------------------------------------"
 
-    # Account.delete_all
+    Account.delete_all
     Campaign.delete_all
-    # Ad.delete_all
+    Ad.delete_all
 
     puts "--------------------------------------------------------------------"
     puts "|                     Generate ACCOUNT DATA                         |"
     puts "--------------------------------------------------------------------"
 
-    # build_accounts
+    build_accounts
     build_campagins
-    # build_ads
+    build_ads
 
     puts "Import Rake Task has been sucessfully executed. \n\n"
   end

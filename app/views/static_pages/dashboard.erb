@@ -3,22 +3,42 @@
   <h1>Dashboard</h1>
 </center>
 
-<div class="row">
-  <% @adaccounts.each do |account| %>
-    <div class="col s6">
+<div ng-controller='DashboardCtrl'>
+  <div class="nav-wrapper">
+    <form>
+      <div class="input-field">
+        <input id="search" type="search" ng-model='query' required>
+        <label for="search"></label>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col s6"
+         ng-repeat="account in filteredAccounts = (accounts
+                                                   | orderBy: 'name'
+                                                   | filter:query)">
       <div class="card white">
         <div class="card-content grey-text">
-          <span class="card-title"><%= account.name %></span>
+          <span class="card-title grey-text text-darken-1">{{account.name}}</span>
           <p>
-            Status: <%= account_status_codes(account.account_status) %><br>
-            <!-- Current Status: <span class="green-text text-darken-2">Ok</span><br> -->
+            Status: {{account.statusCodeValue}}
+            <br>
+            Spend: <span class="green-text text-darken-2">{{account.amount_spent/100 | currency:"$":0}}</span>
           </p>
         </div>
         <div class="card-action">
-          <%= link_to "Overview", overview_path(:account_id => account.account_id) %>
-          <%= link_to "Reporting", reporting_path(:account_id => account.account_id) %>
+          <a href="/overview?account_id={{account.account_id}}">Overview</a>
+          <a href="/reporting?account_id={{account.account_id}}">Reporting</a>
         </div>
       </div>
     </div>
-  <% end %>
+  </div>
+  <div ng-hide='filteredAccounts.length'>
+    <br>
+    <center>
+      <p class='grey-text'>
+        No Ad-Accounts found
+      </p>
+    </center>
+  </div>
 </div>
