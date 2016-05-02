@@ -2,32 +2,25 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAMNdWL1XsSEYiqSMZBBrztHb2LIOhkSxJ4AsgAO6kGSwkwt7SASsfRe07ROxZAeOVmh8UbZBCQ7dnwvqAUjLdYEEPNN7pkrH9khC3ZCeUb0T9uUAR96oPUmZAT2s6r1XZCKpz7IlPfn85d7ptutwgXyJlREmA80gZDZD'
-
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAAYTFKjl1esXsHLOdGpS4jny1BZAItEfVnV5WRKiUtulxWqCfJHvovMcsuILTKrQj7Wg3TJEe8JJFkMqgBN6zv633xnoNGgE9mBgmnbFgRYO4ZCoKMtsFAm1vtz6c0DDGAeDYpSBvts7NymaSjsojY3k7kFgZDZD'
 
   def self.import
     puts "Start Import Rake Task \n"
     puts "--------------------------------------------------------------------"
-    puts "|                       Wipe Current Database                      |"
-    puts "--------------------------------------------------------------------"
-
-    Account.delete_all
-    Campaign.delete_all
-    Ad.delete_all
-
-    puts "--------------------------------------------------------------------"
     puts "|                     Generate ACCOUNT DATA                         |"
     puts "--------------------------------------------------------------------"
 
-    build_accounts
-    build_campagins
-    build_ads
+    # build_accounts
+    build_account_insights
+    # build_campagins
+    # build_ads
 
     puts "Import Rake Task has been sucessfully executed. \n\n"
   end
 
   def self.build_accounts
-    account_columns = ['name', 'account_status', 'age', 'amount_spent']
+    Account.delete_all
+    account_columns = ['name', 'account_status', 'amount_spent']
 
     http_response = RestClient.get "#{BASE_URL}/me/adaccounts", {:params => {:access_token => ACCESS_TOKEN, 'fields' => account_columns}}
     raw_data = JSON.parse(http_response)['data'].sort_by{|x| x[:name]}.reverse
@@ -36,7 +29,6 @@ module Importer
       Account.create(
         account_id:     account['id'],
         account_status: account['account_status'],
-        age:            account['age'],
         amount_spent:   account['amount_spent'],
         name:           account['name']
       )
@@ -48,7 +40,63 @@ module Importer
     end
   end
 
+  def self.build_account_insights
+    AccountInsight.delete_all
+    account_ids = Account.pluck('account_id')
+
+    # General Breakdown
+    ['act_1219093434772270'].each do |account_id|
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name']}}
+      raw_data = JSON.parse(http_response)['data']
+
+      raw_data.each do |account_insight|
+        AccountInsight.create(
+          account_id:    account_id,
+          account_name:  account_insight['account_name'],
+          total_actions: account_insight['total_actions']
+        )
+      end
+    end
+
+    # Age Breakdown
+    ['act_1219093434772270'].each do |account_id|
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name'], 'breakdowns' => 'age'}}
+      raw_data = JSON.parse(http_response)['data']
+
+      raw_data.each do |account_insight|
+        AccountInsight.create(
+          account_id:    account_id,
+          account_name:  account_insight['account_name'],
+          age:           account_insight['age'],
+          total_actions: account_insight['total_actions']
+        )
+      end
+    end
+
+    # Gender Breakdown
+    ['act_1219093434772270'].each do |account_id|
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name'], 'breakdowns' => 'gender'}}
+      raw_data = JSON.parse(http_response)['data']
+
+      raw_data.each do |account_insight|
+        AccountInsight.create(
+          account_id:    account_id,
+          account_name:  account_insight['account_name'],
+          gender:        account_insight['gender'],
+          total_actions: account_insight['total_actions']
+        )
+      end
+    end
+
+    # Output Age Breakdown Account Insight Data
+    AccountInsight.all.each do |account_insight|
+      puts account_insight.attributes
+    end
+  end
+
   def self.build_campagins
+    Campaign.delete_all
+
     campaign_ids = JSON.parse(RestClient.get "#{BASE_URL}/act_1219093434772270/campaigns", {:params => {:access_token => ACCESS_TOKEN}})['data']
 
     campaign_columns = ['date_start','date_stop','account_id','ad_id',
@@ -88,6 +136,8 @@ module Importer
   end
 
   def self.build_ads
+    Ad.delete_all
+
     account_ids = Account.pluck('account_id')
     ad_columns = ['date_start', 'date_stop', 'account_id', 'ad_id', 'ad_name',
                   'campaign_id', 'adset_id', 'objective', 'total_actions',

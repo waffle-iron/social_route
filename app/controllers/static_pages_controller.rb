@@ -40,7 +40,33 @@ class StaticPagesController < ApplicationController
           audiences.push(objective: group[0][1], audience: group[0][0].split('|')[1].strip, cpm: group[1])
         end
 
-        render json: {overview: json_data, cpm_placement: placement, audiences: audiences, demographics: 'demographics'}.to_json
+        general_breakdowns = []
+
+        Campaign.where(account_id:1219093434772270).group(:name).sum(:total_actions).each do |account_insight|
+          general_breakdowns.push(audience: account_insight[0].split('|')[1].strip, results: account_insight[1])
+        end
+
+        age_breakdowns = []
+
+        AccountInsight.where(account_id: 'act_1219093434772270').where.not(age: nil).each do |account_insight|
+          age_breakdowns.push(account_insight)
+        end
+
+        gender_breakdowns = []
+
+        AccountInsight.where(account_id: 'act_1219093434772270').where.not(gender: nil).each do |account_insight|
+          gender_breakdowns.push(account_insight)
+        end
+
+        render json: {overview: json_data,
+                      cpm_placement: placement,
+                      audiences: audiences,
+                      demographics: {
+                        general_breakdowns: general_breakdowns,
+                        age_breakdowns:     age_breakdowns,
+                        gender_breakdowns:  gender_breakdowns
+                      }
+                    }.to_json
       end
     end
   end
