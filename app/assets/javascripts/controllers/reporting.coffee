@@ -22,16 +22,22 @@
       statsChart.type = 'LineChart'
       statsChart.data = [
         [
-         {type: 'string', label: 'Placement'}
-         {type: 'number', label: 'CPM'}
+         {type: 'string', label: 'Date'}
+         {type: 'number', label: 'Impressions'}
+         {type: 'number', label: 'Website Clicks'}
         ]
       ]
 
-      _.forEach cpmData, (n) ->
+      _.forEach statsData, (n) ->
+        console.log statsData
+
         statsChart.data.push([
-          n.placement
-          n.cpm
+          n.date
+          n.impressions
+          n.website_clicks
         ])
+
+
 
       statsChart.options =
         titleTextStyle: {color: '#797575' }
@@ -40,8 +46,8 @@
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '80%', height: '80%'}
+        vAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
+        chartArea: {width: '85%', height: '70%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
 
       $scope.statsChart = statsChart

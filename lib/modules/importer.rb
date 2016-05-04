@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAIRftBRZBvQnWMygRZCJTTudbTsAt3n0ZCmiBjKcgSmn0V68BB5yF9RxmqebY2ZBcGMzGcLHpHCASL3U0NTA00U60EWJo4vpzXw9dlyfV6MyOvr8OMZAbjG9OmJ9wYUkyhGyl3cxFegDmZA1QQaw25e4ZBP5YKuXAZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAJiYDcCBEVRpvrZCASiOQCTqkTftDuAzbZBR7F4j4g351iLAWqJXOkgekAZC6RYGZB7FDPZAdsXef8WrZB0eECP2ZAxIbZCxF7ZAqaSZCyFQYmBcfcQKZAqrIiWwJ3KekEZBChUMRoRVaI8x2rvOOrKyqGzVCIAhm5lpyQZDZD'
 
   def self.import
     puts "Start Import Rake Task \n"

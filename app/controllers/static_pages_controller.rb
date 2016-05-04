@@ -34,6 +34,17 @@ class StaticPagesController < ApplicationController
 
         data = []
 
+        impressions_daily = AccountInsight.where(account_id: 'act_1219093434772270').group(:impressions).map{|k,v| {date: k, impressions: v}}
+        website_clicks_daily = AccountInsight.where(account_id: 'act_1219093434772270').group(:website_clicks).map{|k,v| {date: k, website_clicks: v}}
+        daily_data = impressions_daily + website_clicks_daily
+        daily_stats_data = daily_data.group_by{|h| h[:date]}.map{|k,v| v.reduce(:merge)}
+
+        # daily_stats_data = {
+        #                     website_clicks:
+        #                     video_views: Action.where(account_id: 'act_1219093434772270', action_type: 'video_view'),
+        #                     post_engagement: Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement')
+        #                    }
+
         account_stats = {impressions: AccountInsight.where(account_id: 'act_1219093434772270').select(:impressions).sum(:impressions),
                          website_clicks: AccountInsight.where(account_id: 'act_1219093434772270').select(:website_clicks).sum(:website_clicks),
                          video_views: Action.where(account_id: 'act_1219093434772270', action_type: 'video_view').sum(:value),
@@ -69,6 +80,7 @@ class StaticPagesController < ApplicationController
         end
 
         render json: {overview: json_data,
+                      dailyStatsData: daily_stats_data,
                       account_stats: account_stats,
                       cpm_placement: placement,
                       audiences: audiences,
