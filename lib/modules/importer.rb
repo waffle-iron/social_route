@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAAYTFKjl1esXsHLOdGpS4jny1BZAItEfVnV5WRKiUtulxWqCfJHvovMcsuILTKrQj7Wg3TJEe8JJFkMqgBN6zv633xnoNGgE9mBgmnbFgRYO4ZCoKMtsFAm1vtz6c0DDGAeDYpSBvts7NymaSjsojY3k7kFgZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAIRftBRZBvQnWMygRZCJTTudbTsAt3n0ZCmiBjKcgSmn0V68BB5yF9RxmqebY2ZBcGMzGcLHpHCASL3U0NTA00U60EWJo4vpzXw9dlyfV6MyOvr8OMZAbjG9OmJ9wYUkyhGyl3cxFegDmZA1QQaw25e4ZBP5YKuXAZDZD'
 
   def self.import
     puts "Start Import Rake Task \n"
@@ -46,52 +46,70 @@ module Importer
 
     # General Breakdown
     ['act_1219093434772270'].each do |account_id|
-      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name']}}
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
+                                     {:params => {'access_token' => ACCESS_TOKEN,
+                                                  'date_preset' => 'lifetime',
+                                                  'time_increment' => 1,
+                                                  'limit' => 365,
+                                                  'fields' => ['account_name','impressions','spend','website_clicks','actions']
+                                                  }}
       raw_data = JSON.parse(http_response)['data']
 
       raw_data.each do |account_insight|
         AccountInsight.create(
           account_id:    account_id,
           account_name:  account_insight['account_name'],
-          total_actions: account_insight['total_actions']
+          impressions:   account_insight['impressions'],
+          spend:   account_insight['spend'],
+          website_clicks:   account_insight['website_clicks'],
+          date: account_insight['date_start']
         )
+
+        account_insight['actions'].each do |action|
+          Action.create(
+            action_type: action['action_type'],
+            value: action['value'],
+            date: account_insight['date_start'],
+            account_id: account_id
+          )
+        end
       end
     end
 
     # Age Breakdown
-    ['act_1219093434772270'].each do |account_id|
-      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name'], 'breakdowns' => 'age'}}
-      raw_data = JSON.parse(http_response)['data']
-
-      raw_data.each do |account_insight|
-        AccountInsight.create(
-          account_id:    account_id,
-          account_name:  account_insight['account_name'],
-          age:           account_insight['age'],
-          total_actions: account_insight['total_actions']
-        )
-      end
-    end
+    # ['act_1219093434772270'].each do |account_id|
+    #   http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name'], 'breakdowns' => 'age'}}
+    #   raw_data = JSON.parse(http_response)['data']
+    #
+    #   raw_data.each do |account_insight|
+    #     AccountInsight.create(
+    #       account_id:    account_id,
+    #       account_name:  account_insight['account_name'],
+    #       age:           account_insight['age'],
+    #       total_actions: account_insight['total_actions']
+    #     )
+    #   end
+    # end
 
     # Gender Breakdown
-    ['act_1219093434772270'].each do |account_id|
-      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name'], 'breakdowns' => 'gender'}}
-      raw_data = JSON.parse(http_response)['data']
-
-      raw_data.each do |account_insight|
-        AccountInsight.create(
-          account_id:    account_id,
-          account_name:  account_insight['account_name'],
-          gender:        account_insight['gender'],
-          total_actions: account_insight['total_actions']
-        )
-      end
-    end
+    # ['act_1219093434772270'].each do |account_id|
+    #   http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => ['total_actions','account_name'], 'breakdowns' => 'gender'}}
+    #   raw_data = JSON.parse(http_response)['data']
+    #
+    #   raw_data.each do |account_insight|
+    #     AccountInsight.create(
+    #       account_id:    account_id,
+    #       account_name:  account_insight['account_name'],
+    #       gender:        account_insight['gender'],
+    #       total_actions: account_insight['total_actions']
+    #     )
+    #   end
+    # end
 
     # Output Age Breakdown Account Insight Data
-    AccountInsight.all.each do |account_insight|
-      puts account_insight.attributes
-    end
+    # AccountInsight.all.each do |account_insight|
+    #   puts account_insight.attributes
+    # end
   end
 
   def self.build_campagins
@@ -108,25 +126,27 @@ module Importer
       http_response = RestClient.get "#{BASE_URL}/#{campaign_id['id']}/insights", {:params => {'access_token' => ACCESS_TOKEN, 'fields' => campaign_columns, 'breakdowns' => 'placement'}}
       raw_data = JSON.parse(http_response)['data']
 
-      raw_data.each do |campaign|
-        Campaign.create(
-          campaign_id:   campaign_id['id'],
-          account_id:    campaign['account_id'],
-          name:          campaign['campaign_name'],
-          objective:     campaign['objective'],
-          start_time:    campaign['date_start'],
-          stop_time:     campaign['date_stop'],
-          placement:     campaign['placement'],
-          spend:         campaign['spend'],
-          frequency:     campaign['frequency'],
-          impressions:   campaign['impressions'],
-          cpc:           campaign['cpc'],
-          cpm:           campaign['cpm'],
-          cpp:           campaign['cpp'],
-          reach:         campaign['reach'],
-          total_actions: campaign['total_actions']
-        )
-      end
+      puts raw_data
+
+      # raw_data.each do |campaign|
+      #   Campaign.create(
+      #     campaign_id:   campaign_id['id'],
+      #     account_id:    campaign['account_id'],
+      #     name:          campaign['campaign_name'],
+      #     objective:     campaign['objective'],
+      #     start_time:    campaign['date_start'],
+      #     stop_time:     campaign['date_stop'],
+      #     placement:     campaign['placement'],
+      #     spend:         campaign['spend'],
+      #     frequency:     campaign['frequency'],
+      #     impressions:   campaign['impressions'],
+      #     cpc:           campaign['cpc'],
+      #     cpm:           campaign['cpm'],
+      #     cpp:           campaign['cpp'],
+      #     reach:         campaign['reach'],
+      #     total_actions: campaign['total_actions']
+      #   )
+      # end
 
       # Output Campaign Data
       Campaign.all.each do |campaign|

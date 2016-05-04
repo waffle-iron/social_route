@@ -32,6 +32,16 @@ class StaticPagesController < ApplicationController
         final_data = impressions + reach + total_actions + spend
         json_data = final_data.group_by{|h| h[:objective]}.map{|k,v| v.reduce(:merge)}
 
+        data = []
+
+        account_stats = {impressions: AccountInsight.where(account_id: 'act_1219093434772270').select(:impressions).sum(:impressions),
+                         website_clicks: AccountInsight.where(account_id: 'act_1219093434772270').select(:website_clicks).sum(:website_clicks),
+                         video_views: Action.where(account_id: 'act_1219093434772270', action_type: 'video_view').sum(:value),
+                         post_engagement: Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement').sum(:value)
+                       }
+
+
+
         placement = Campaign.where(account_id:1219093434772270).group(:placement).sum(:cpm).map{|k,v| {placement: k, cpm: v}}
 
         audiences = []
@@ -59,6 +69,7 @@ class StaticPagesController < ApplicationController
         end
 
         render json: {overview: json_data,
+                      account_stats: account_stats,
                       cpm_placement: placement,
                       audiences: audiences,
                       demographics: {

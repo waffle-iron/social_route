@@ -9,121 +9,132 @@
 </center>
 
 <div ng-controller='ReportingCtrl'>
-  <div class=''>
-
-    <div class="row">
-
-      <div class='col s12 m3'>
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <h5 class="center-align">Total<br>Impressions</h5>
-            <h3 class="center-align">1,446,374</h3>
-          </div>
-        </div>
-      </div>
-      <div class='col s12 m3'>
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <h5 class="center-align">Website<br>Clicks</h5>
-            <h3 class="center-align">13,384</h3>
-          </div>
-        </div>
-      </div>
-      <div class='col s12 m3'>
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <h5 class="center-align">Video<br>Views</h5>
-            <h3 class="center-align">136,510</h3>
-          </div>
-        </div>
-      </div>
-      <div class='col s12 m3'>
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <h5 class="center-align">Post<br>Engagements</h5>
-            <h3 class="center-align">152,207</h3>
-          </div>
+  <div class="row">
+    <div class='col s12 m3'>
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <h2 class="center-align">
+            {{reporting.account_stats.impressions | number:0}}
+          </h2>
+          <h6 class="center-align">Total Impressions</h6>
         </div>
       </div>
     </div>
-
-
-    <div class="row">
-      <div class="col s12 m12">
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <span class="card-title">Campaign Overview: 12/31/15 - 4/30/16</span>
-            <table class="bordered responsive-table highlight">
-              <thead>
-                <tr>
-                  <th>Objective</th>
-                  <th class="right-align">Impressions</th>
-                  <th class="right-align">Reach</th>
-                  <th class="right-align">Results</th>
-                  <th class="right-align">CPM</th>
-                  <th class="right-align">CPR</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="data in reporting.overview">
-                  <td>{{data.objective}}</td>
-                  <td class="right-align">{{data.impressions | number:0}}</td>
-                  <td class="right-align">{{data.reach | number:0}}</td>
-                  <td class="right-align">{{data.total_actions | number:0}}</td>
-                  <td class="right-align">{{data.CPM | currency}}</td>
-                  <td class="right-align">{{data.CRR | currency}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <div class='col s12 m3'>
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <h2 class="center-align">
+            {{reporting.account_stats.website_clicks | number:0}}
+          </h2>
+          <h6 class="center-align">Website Clicks</h6>
         </div>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col s12 m12">
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <span class="card-title">CPM by Placement: 12/31/15 - 4/30/16</span>
-            <br><br>
-             <div google-chart chart="cpmChart" style="height: 400px;"></div>
-          </div>
+    <div class='col s12 m3'>
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <h2 class="center-align">
+            {{reporting.account_stats.video_views | number:0}}
+          </h2>
+          <h6 class="center-align">Video Views</h6>
         </div>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col s12 m12">
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <span class="card-title">Audiences: 12/31/15 - 4/30/16</span>
-            <br><br>
-            <div google-chart chart="audiencesChart" style="height: 400px;"></div>
-          </div>
+    <div class='col s12 m3'>
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <h2 class="center-align">
+            {{reporting.account_stats.post_engagement | number:0}}
+          </h2>
+          <h6 class="center-align">Post Engagements</h6>
         </div>
       </div>
     </div>
+  </div>
+  <br>
+  <div class="card white darken-1">
+    <div class="card-content grey-text text-darken-1">
+      <span class="card-title">General Performance</span>
+      <br><br>
+       <div google-chart chart="statsChart" style="height: 400px;"></div>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">Campaign Overview: 12/31/15 - 4/30/16</span>
+          <table class="bordered responsive-table highlight">
+            <thead>
+              <tr>
+                <th>Objective</th>
+                <th class="right-align">Impressions</th>
+                <th class="right-align">Reach</th>
+                <th class="right-align">Results</th>
+                <th class="right-align">CPM</th>
+                <th class="right-align">CPR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="data in reporting.overview">
+                <td>{{data.objective}}</td>
+                <td class="right-align">{{data.impressions | number:0}}</td>
+                <td class="right-align">{{data.reach | number:0}}</td>
+                <td class="right-align">{{data.total_actions | number:0}}</td>
+                <td class="right-align">{{data.CPM | currency}}</td>
+                <td class="right-align">{{data.CRR | currency}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <div class="row">
-      <div class="col s12 m12">
-        <div class="card white darken-1">
-          <div class="card-content grey-text text-darken-1">
-            <span class="card-title">Demographics: 12/31/15 - 4/30/16</span>
-            <br><br>
-            <div class="row">
-              <div class="col s12 m6">
-                <center><h5>Gender</h5></center>
-                <div google-chart chart='genderChart' style='height: 400px;'></div>
-              </div>
-              <div class="col s12 m6">
-                <center><h5>Age</h5></center>
-                <div google-chart chart='ageChart' style='height: 400px;'></div>
-              </div>
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">CPM by Placement: 12/31/15 - 4/30/16</span>
+          <br><br>
+           <div google-chart chart="cpmChart" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">Audiences: 12/31/15 - 4/30/16</span>
+          <br><br>
+          <div google-chart chart="audiencesChart" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">Demographics: 12/31/15 - 4/30/16</span>
+          <br><br>
+          <div class="row">
+            <div class="col s12 m6">
+              <center><h5>Gender</h5></center>
+              <div google-chart chart='genderChart' style='height: 400px;'></div>
             </div>
-            <br><br>
-            <center><h5>Audience</h5></center>
-            <div google-chart chart='generalChart' style='height: 400px;'></div>
+            <div class="col s12 m6">
+              <center><h5>Age</h5></center>
+              <div google-chart chart='ageChart' style='height: 400px;'></div>
+            </div>
           </div>
+          <br><br>
+          <center><h5>Audience</h5></center>
+          <div google-chart chart='generalChart' style='height: 400px;'></div>
         </div>
       </div>
     </div>

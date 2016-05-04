@@ -11,16 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160502002116) do
+ActiveRecord::Schema.define(version: 20160504022844) do
 
   create_table "account_insights", force: :cascade do |t|
     t.string   "account_id"
     t.string   "account_name"
     t.string   "age"
     t.string   "gender"
-    t.integer  "total_actions"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+    t.string   "actions"
+    t.string   "impressions"
+    t.float    "spend"
+    t.integer  "website_clicks"
+    t.string   "date"
   end
 
   create_table "accounts", force: :cascade do |t|
@@ -31,6 +35,15 @@ ActiveRecord::Schema.define(version: 20160502002116) do
     t.string   "name"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
+  end
+
+  create_table "actions", force: :cascade do |t|
+    t.string   "account_id"
+    t.string   "action_type"
+    t.string   "date"
+    t.float    "value"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "ads", force: :cascade do |t|

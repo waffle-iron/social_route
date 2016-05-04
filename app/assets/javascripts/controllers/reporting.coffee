@@ -15,6 +15,36 @@
       createGenderChart(reportingData.demographics.gender_breakdowns)
       createAgeChart(reportingData.demographics.age_breakdowns)
       createGeneralChart(reportingData.demographics.general_breakdowns)
+      createStatsChart(reportingData.dailyStatsData)
+
+    createStatsChart = (statsData)->
+      statsChart = {}
+      statsChart.type = 'LineChart'
+      statsChart.data = [
+        [
+         {type: 'string', label: 'Placement'}
+         {type: 'number', label: 'CPM'}
+        ]
+      ]
+
+      _.forEach cpmData, (n) ->
+        statsChart.data.push([
+          n.placement
+          n.cpm
+        ])
+
+      statsChart.options =
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
+        vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+
+      $scope.statsChart = statsChart
 
     createCpmChart = (cpmData)->
       cpmChart = {}
