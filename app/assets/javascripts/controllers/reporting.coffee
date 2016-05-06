@@ -208,55 +208,36 @@
       genderChart.type = 'PieChart'
       genderChart.data = [
         [
-         {type: 'string', label: 'Male'}
-         {type: 'string', label: 'Female'}
-         {type: 'string', label: 'Unkown'}
+         {type: 'string', label: 'Gender', p: {}}
+         {type: 'string', label: 'Results', p: {}}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
         ]
       ]
 
-      male =   _.map(_.filter(genderData, {gender: 'male'}), 'total_actions')[0]
-      female = _.map(_.filter(genderData, {gender: 'female'}), 'total_actions')[0]
-      unknown = _.map(_.filter(genderData, {gender: 'unknown'}), 'total_actions')[0]
-
-      genderChart.data =
-        'cols': [
-          {
-            id: 't'
-            label: 'Gender'
-            type: 'string'
+      _.forEach genderData, (n) ->
+        genderChart.data.push([
+          n.gender_with_data
+          n.results
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + n.gender + "</strong></span><br><br>" +
+                "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#616161;'>" + numberFilter(n.results) + "<br></span></p>" +
+              "</div>", p: {}
           }
-          {
-            id: 's'
-            label: 'Results'
-            type: 'number'
-          }
-        ]
-        'rows': [
-          { c: [
-            { v: 'Male' }
-            { v: male }
-          ] }
-          { c: [
-            { v: 'Female' }
-            { v: female }
-          ] }
-          { c: [
-            { v: 'Unknown' }
-            { v: unknown }
-          ] }
-        ]
+        ])
 
       genderChart.options =
         legend: 'none',
         pieSliceText: 'label',
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
+        tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
+        vAxis: { title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
         chartArea: {width: '100%', height: '100%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#2196F3', '#F06292', '#BDBDBD']
 
       $scope.genderChart = genderChart
 
@@ -268,13 +249,19 @@
         [
          {type: 'string', label: 'Age'}
          {type: 'number', label: 'Results'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
         ]
       ]
 
       _.forEach ageData, (data) ->
         ageChart.data.push([
-          data['age']
-          data['total_actions']
+          data['age_with_data']
+          data['results']
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data['age'] + "</strong></span><br><br>" +
+                "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#616161;'>" + numberFilter(data['results']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
         ])
 
       ageChart.options =
@@ -282,12 +269,14 @@
         pieSliceText: 'label',
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
+        tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
         vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
         chartArea: {width: '100%', height: '100%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#80CBC4', '#4DB6AC', '#26A69A', '#009688', '#00897B', '#00796B']
 
       $scope.ageChart = ageChart
 
