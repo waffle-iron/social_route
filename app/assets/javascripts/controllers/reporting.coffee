@@ -1,13 +1,25 @@
 @thesocialroute.controller 'ReportingCtrl', [
   '$scope'
   'Reporting'
+  '$filter'
 
-  @DashboardCtrl = ($scope, Reporting) ->
+  @DashboardCtrl = ($scope, Reporting,  $filter) ->
+    numberFilter = $filter('number')
+    currencyFilter = $filter('currency')
+
     Reporting.index().$promise
     .then (reportingData) ->
-      _.forEach reportingData.overview, (objective) ->
-        objective.CPM = (objective.impressions/objective.spend)/1000
-        objective.CRR = objective.total_actions/objective.spend
+      _.forEach reportingData.overview, (objectiveData) ->
+        if objectiveData.objective is "CONVERSIONS"
+          objectiveData.objectiveName = "Website Conversions"
+        else if objectiveData.objective is "LINK_CLICKS"
+          objectiveData.objectiveName = "Clicks to Website"
+        else if objectiveData.objective is "POST_ENGAGEMENT"
+          objectiveData.objectiveName = "Post Engagement"
+        else if objectiveData.objective is "VIDEO_VIEWS"
+          objectiveData.objectiveName = "Video Views"
+        else
+          objectiveData.objectiveName = objectiveData.objective
 
       $scope.reporting = reportingData
       createCpmChart(reportingData.cpm_placement)
@@ -15,7 +27,7 @@
       createGenderChart(reportingData.demographics.gender_breakdowns)
       createAgeChart(reportingData.demographics.age_breakdowns)
       createGeneralChart(reportingData.demographics.general_breakdowns)
-      createStatsChart(reportingData.dailyStatsData)
+      createStatsChart(reportingData.daily_stats_data)
 
     createStatsChart = (statsData)->
       statsChart = {}
@@ -23,32 +35,52 @@
       statsChart.data = [
         [
          {type: 'string', label: 'Date'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
          {type: 'number', label: 'Impressions'}
          {type: 'number', label: 'Website Clicks'}
+         {type: 'number', label: 'Video Views'}
+         {type: 'number', label: 'Post Engagements'}
         ]
       ]
 
       _.forEach statsData, (n) ->
-        console.log statsData
-
         statsChart.data.push([
-          n.date
+          moment(n.date).format('MMM Do')
+          {v: "<div style='width: 180px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + moment(n.date).format("MMM D, YYYY") + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Impressions<br><span style='font-size: 200%; color:#3F6FCF;'>" + numberFilter(n.impressions) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Website Clicks<br><span style='font-size: 200%; color:#DC3912;'>" + numberFilter(n.website_clicks) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Video Views<br><span style='font-size: 200%; color:#FF9900;'>" + numberFilter(n.video_views) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Post Engagements<br><span style='font-size: 200%; color:#109618;'>" + numberFilter(n.post_engagements) + "<br></span></p>" +
+              "</div>", p: {}
+          }
           n.impressions
           n.website_clicks
+          n.video_views
+          n.post_engagements
         ])
-
-
 
       statsChart.options =
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
         is3D: true
+        tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'category'
         legend: { position: 'none'}
+        series: {
+          0: {targetAxisIndex: 0},
+          1: {targetAxisIndex: 1},
+          2: {targetAxisIndex: 1},
+          3: {targetAxisIndex: 1}
+        }
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '85%', height: '70%'}
-        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        vAxes: {
+          0: {title: 'Impressions', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}},
+          1: {title: 'Website Clicks, Video Views, and Post Engagements', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}}
+        }
+        chartArea: {width: '80%', height: '70%'}
+        crosshair: { trigger: 'both', orientation: 'vertical', color: 'grey', opacity: 0.5 }
 
       $scope.statsChart = statsChart
 
@@ -58,6 +90,7 @@
       cpmChart.data = [
         [
          {type: 'string', label: 'Placement'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
          {type: 'number', label: 'CPM'}
         ]
       ]
@@ -65,6 +98,11 @@
       _.forEach cpmData, (n) ->
         cpmChart.data.push([
           n.placement
+          {v: "<div style='width: 220px; padding: 20px;'>" +
+              "<strong style='color: #424242'><p style='font-size: 200%'>" + n.placement + "</p></strong></span><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM<br><span style='font-size: 200%; color:#29B6F6;'>" + currencyFilter(n.cpm) + "<br></span></p>" +
+              "</div>", p: {}
+          }
           n.cpm
         ])
 
@@ -72,67 +110,96 @@
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
         is3D: true
+        tooltip: {isHtml: true}
+        focusTarget: 'category'
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
         vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#29B6F6']
 
       $scope.cpmChart = cpmChart
 
-    createAudiencesChart = (audienceData)->
+    createAudiencesChart = (objectives)->
       audiencesChart = {}
       audiencesChart.type = 'BarChart'
-
-      objectives = _.uniq(_.map(_.sortBy(audienceData, 'objective'), 'objective'))
 
       audiencesChart.data = [
         [
          {type: 'string', label: 'Audience'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
          {type: 'number', label: 'CPM Audience #1'}
          {type: 'number', label: 'CPM Audience #2'}
          {type: 'number', label: 'CPM Audience #3'}
         ]
       ]
 
-      _.forEach objectives, (n) ->
-        audiences = _.filter(audienceData, { 'objective': n})
+      _.forEach objectives, (objectiveData) ->
+          if objectiveData.audiences.length is 1
+            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
+            cpm_2 = null
+            cpm_3 = null
+            audience_1 = objectiveData.audiences[0]['audience']
+            audience_2 = null
+            audience_3 = null
+          if objectiveData.audiences.length is 2
+            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
+            cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
+            cpm_3 = null
+            audience_1 = objectiveData.audiences[0]['audience']
+            audience_2 = objectiveData.audiences[1]['audience']
+            audience_3 = null
+          if objectiveData.audiences.length is 3
+            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
+            cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
+            cpm_3 = objectiveData.audiences[2]['spend']/(objectiveData.audiences[2]['impressions']/1000)
+            audience_1 = objectiveData.audiences[0]['audience']
+            audience_2 = objectiveData.audiences[1]['audience']
+            audience_3 = objectiveData.audiences[2]['audience']
 
-        if audiences.length is 1
           audiencesChart.data.push([
-            n
-            audienceData[0].cpm
-            null
-            null
-          ])
-
-        if audiences.length is 2
-          audiencesChart.data.push([
-            n
-            audienceData[0].cpm
-            audienceData[1].cpm
-            null
-          ])
-
-        if audiences.length is 3
-          audiencesChart.data.push([
-            n
-            audienceData[0].cpm
-            audienceData[1].cpm
-            audienceData[2].cpm
+            objectiveData.objective
+            if audience_3 isnt null
+              {v: "<div style='width: 180px; padding: 20px;'>" +
+                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_2 + " Audience <br><span style='font-size: 200%; color:#D95F02;'>" +   currencyFilter(cpm_2) + "<br></span></p>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_3 + " Audience <br><span style='font-size: 200%; color:#7570B3;'>" +   currencyFilter(cpm_3) + "<br></span></p>" +
+                  "</div>", p: {}
+              }
+            else if audience_2 isnt null
+              {v: "<div style='width: 180px; padding: 20px;'>" +
+                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_2 + " Audience <br><span style='font-size: 200%; color:#D95F02;'>" +   currencyFilter(cpm_2) + "<br></span></p>" +
+                  "</div>", p: {}
+              }
+            else
+              {v: "<div style='width: 180px; padding: 20px;'>" +
+                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
+                  "</div>", p: {}
+              }
+            cpm_1
+            cpm_2
+            cpm_3
           ])
 
       audiencesChart.options =
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
         is3D: true
+        tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'category'
         legend: { position: 'none'}
         hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
         vAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '60%', height: '80%'}
+        chartArea: {width: '70%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#1B9E77', '#D95F02', '#7570B3']
 
       $scope.audiencesChart = audiencesChart
 

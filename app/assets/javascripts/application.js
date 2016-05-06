@@ -17,6 +17,7 @@
 //= require angular
 //= require angular-resource
 //= require angular-google-chart.min.js
+//= require moment.min.js
 //= require lodash.min.js
 //= require toastr
 //= require modules

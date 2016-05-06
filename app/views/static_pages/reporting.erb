@@ -13,17 +13,17 @@
     <div class='col s12 m3'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align">
+          <h3 class="center-align" style="color: #3F6FCF;">
             {{reporting.account_stats.impressions | number:0}}
           </h3>
-          <h6 class="center-align">Total Impressions</h6>
+          <h6 class="center-align">Impressions</h6>
         </div>
       </div>
     </div>
     <div class='col s12 m3'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align">
+          <h3 class="center-align" style="color: #DC3912">
             {{reporting.account_stats.website_clicks | number:0}}
           </h3>
           <h6 class="center-align">Website Clicks</h6>
@@ -33,7 +33,7 @@
     <div class='col s12 m3'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align">
+          <h3 class="center-align" style="color: #FF9900">
             {{reporting.account_stats.video_views | number:0}}
           </h3>
           <h6 class="center-align">Video Views</h6>
@@ -43,7 +43,7 @@
     <div class='col s12 m3'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align">
+          <h3 class="center-align" style="color: #109618">
             {{reporting.account_stats.post_engagement | number:0}}
           </h3>
           <h6 class="center-align">Post Engagements</h6>
@@ -51,20 +51,18 @@
       </div>
     </div>
   </div>
-  <br>
   <div class="card white darken-1">
     <div class="card-content grey-text text-darken-1">
-      <span class="card-title">General Performance</span>
+      <span class="card-title">General Performance: {{reporting.date_range}}</span>
       <br><br>
        <div google-chart chart="statsChart" style="height: 400px;"></div>
     </div>
   </div>
-  <br>
   <div class="row">
     <div class="col s12 m12">
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Campaign Overview: 12/31/15 - 4/30/16</span>
+          <span class="card-title">Campaign Overview: {{reporting.date_range}}</span>
           <table class="bordered responsive-table highlight">
             <thead>
               <tr>
@@ -77,13 +75,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="data in reporting.overview">
-                <td>{{data.objective}}</td>
+              <tr ng-repeat="data in reporting.overview | orderBy: 'objectiveName'">
+                <td>{{data.objectiveName}}</td>
                 <td class="right-align">{{data.impressions | number:0}}</td>
                 <td class="right-align">{{data.reach | number:0}}</td>
-                <td class="right-align">{{data.total_actions | number:0}}</td>
-                <td class="right-align">{{data.CPM | currency}}</td>
-                <td class="right-align">{{data.CRR | currency}}</td>
+                <td class="right-align">{{data.results | number:0}}</td>
+                <td class="right-align">{{data.spend/(data.impressions/1000) | currency}}</td>
+                <td class="right-align">{{data.spend/(data.results/1000) | currency}}</td>
               </tr>
             </tbody>
           </table>
@@ -96,7 +94,7 @@
     <div class="col s12 m12">
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <span class="card-title">CPM by Placement: 12/31/15 - 4/30/16</span>
+          <span class="card-title">CPM by Placement: {{reporting.date_range}}</span>
           <br><br>
            <div google-chart chart="cpmChart" style="height: 400px;"></div>
         </div>
@@ -108,7 +106,7 @@
     <div class="col s12 m12">
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Audiences: 12/31/15 - 4/30/16</span>
+          <span class="card-title">Audiences: {{reporting.date_range}}</span>
           <br><br>
           <div google-chart chart="audiencesChart" style="height: 400px;"></div>
         </div>
@@ -120,7 +118,7 @@
     <div class="col s12 m12">
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Demographics: 12/31/15 - 4/30/16</span>
+          <span class="card-title">Demographics: {{reporting.date_range}}</span>
           <br><br>
           <div class="row">
             <div class="col s12 m6">
