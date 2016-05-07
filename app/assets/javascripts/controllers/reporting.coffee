@@ -26,63 +26,7 @@
       createAudiencesChart(reportingData.audiences)
       createGenderChart(reportingData.demographics.gender_breakdowns)
       createAgeChart(reportingData.demographics.age_breakdowns)
-      createGeneralChart(reportingData.demographics.general_breakdowns)
-      createStatsChart(reportingData.daily_stats_data)
-
-    createStatsChart = (statsData)->
-      statsChart = {}
-      statsChart.type = 'LineChart'
-      statsChart.data = [
-        [
-         {type: 'string', label: 'Date'}
-         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
-         {type: 'number', label: 'Impressions'}
-         {type: 'number', label: 'Website Clicks'}
-         {type: 'number', label: 'Video Views'}
-         {type: 'number', label: 'Post Engagements'}
-        ]
-      ]
-
-      _.forEach statsData, (n) ->
-        statsChart.data.push([
-          moment(n.date).format('MMM Do')
-          {v: "<div style='width: 180px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + moment(n.date).format("MMM D, YYYY") + "</strong></span><br><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Impressions<br><span style='font-size: 200%; color:#3F6FCF;'>" + numberFilter(n.impressions) + "<br></span></p>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Website Clicks<br><span style='font-size: 200%; color:#DC3912;'>" + numberFilter(n.website_clicks) + "<br></span></p>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Video Views<br><span style='font-size: 200%; color:#FF9900;'>" + numberFilter(n.video_views) + "<br></span></p>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Post Engagements<br><span style='font-size: 200%; color:#109618;'>" + numberFilter(n.post_engagements) + "<br></span></p>" +
-              "</div>", p: {}
-          }
-          n.impressions
-          n.website_clicks
-          n.video_views
-          n.post_engagements
-        ])
-
-      statsChart.options =
-        titleTextStyle: {color: '#797575' }
-        displayExactValues: true
-        is3D: true
-        tooltip: {isHtml: true}
-        animation: { startup: true, duration: 1000, easing: 'in' }
-        focusTarget: 'category'
-        legend: { position: 'none'}
-        series: {
-          0: {targetAxisIndex: 0},
-          1: {targetAxisIndex: 1},
-          2: {targetAxisIndex: 1},
-          3: {targetAxisIndex: 1}
-        }
-        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxes: {
-          0: {title: 'Impressions', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}},
-          1: {title: 'Website Clicks, Video Views, and Post Engagements', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}}
-        }
-        chartArea: {width: '80%', height: '70%'}
-        crosshair: { trigger: 'both', orientation: 'vertical', color: 'grey', opacity: 0.5 }
-
-      $scope.statsChart = statsChart
+      createGeneralChart(reportingData.demographics.audience_breakdowns)
 
     createCpmChart = (cpmData)->
       cpmChart = {}
@@ -287,21 +231,33 @@
         [
          {type: 'string', label: 'Audience'}
          {type: 'number', label: 'Results'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
         ]
       ]
 
-      audiences = _.uniq(_.map(generalData, 'audience'), 'audience')
+      _.forEach generalData, (data) ->
+        percentage_raw = Math.round((data.results/(_.sumBy(generalData, 'results'))*100)*10)/10
 
-      _.forEach audiences, (audience) ->
+        percentage = percentage_raw + '%'
+
         generalChart.data.push([
-          audience
-          _.sumBy(_.filter(generalData, { 'audience': audience}), 'results')
+          data.audience
+          data.results
+          percentage
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['results']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
         ])
 
       generalChart.options =
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
         is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
@@ -310,6 +266,4 @@
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
 
       $scope.generalChart = generalChart
-
-
 ]

@@ -12,50 +12,53 @@
   <div class="row">
     <div class='col s12 m3'>
       <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align" style="color: #3F6FCF;">
+        <div class="card-content grey-text text-darken-1" style='height: 160px;'>
+          <h4 class="center-align" style="color: #3F6FCF;">
             {{reporting.account_stats.impressions | number:0}}
-          </h3>
-          <h6 class="center-align">Impressions</h6>
+          </h4>
+          <h6 class="center-align">Impressions</h6><br>
         </div>
       </div>
     </div>
-    <div class='col s12 m3'>
+    <div class='col s12 m2'>
       <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align" style="color: #DC3912">
+        <div class="card-content grey-text text-darken-1" style='height: 160px;'>
+          <h4 class="center-align" style="color: #DC3912">
             {{reporting.account_stats.website_clicks | number:0}}
-          </h3>
-          <h6 class="center-align">Website Clicks</h6>
+          </h4>
+          <h6 class="center-align">Website Clicks</h6><br>
         </div>
       </div>
     </div>
-    <div class='col s12 m3'>
+    <div class='col s12 m2'>
       <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align" style="color: #FF9900">
-            {{reporting.account_stats.video_views | number:0}}
-          </h3>
-          <h6 class="center-align">Video Views</h6>
+        <div class="card-content grey-text text-darken-1" style='height: 160px;'>
+          <h4 class="center-align" style="color: #8E24AA">
+            {{reporting.account_stats.website_conversions | number:0}}
+          </h4>
+          <h6 class="center-align">Website Conversions</h6><br>
         </div>
       </div>
     </div>
-    <div class='col s12 m3'>
+    <div class='col s12 m2'>
       <div class="card white darken-1">
-        <div class="card-content grey-text text-darken-1">
-          <h3 class="center-align" style="color: #109618">
+        <div class="card-content grey-text text-darken-1" style='height: 160px;'>
+          <h4 class="center-align" style="color: #109618">
             {{reporting.account_stats.post_engagement | number:0}}
-          </h3>
-          <h6 class="center-align">Post Engagements</h6>
+          </h4>
+          <h6 class="center-align">Likes, Comments, and Shares</h6>
         </div>
       </div>
     </div>
-  </div>
-  <div class="card white darken-1">
-    <div class="card-content grey-text text-darken-1">
-      <span class="card-title">General Performance: {{reporting.date_range}}</span>
-      <br><br>
-       <div google-chart chart="statsChart" style="height: 400px;"></div>
+    <div class='col s12 m3'>
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1" style='height: 160px;'>
+          <h4 class="center-align" style="color: #FF9900">
+            {{reporting.account_stats.video_views | number:0}}
+          </h4>
+          <h6 class="center-align">Video Views</h6><br>
+        </div>
+      </div>
     </div>
   </div>
   <div class="row">
@@ -67,21 +70,21 @@
             <thead>
               <tr>
                 <th>Objective</th>
-                <th class="right-align">Impressions</th>
-                <th class="right-align">Reach</th>
                 <th class="right-align">Results</th>
-                <th class="right-align">CPM</th>
                 <th class="right-align">CPR</th>
+                <th class="right-align">Reach</th>
+                <th class="right-align">Impressions</th>
+                <th class="right-align">CPM</th>
               </tr>
             </thead>
             <tbody>
               <tr ng-repeat="data in reporting.overview | orderBy: 'objectiveName'">
                 <td>{{data.objectiveName}}</td>
-                <td class="right-align">{{data.impressions | number:0}}</td>
-                <td class="right-align">{{data.reach | number:0}}</td>
                 <td class="right-align">{{data.results | number:0}}</td>
+                <td class="right-align">{{data.spend/data.results | currency}}</td>
+                <td class="right-align">{{data.reach | number:0}}</td>
+                <td class="right-align">{{data.impressions | number:0}}</td>
                 <td class="right-align">{{data.spend/(data.impressions/1000) | currency}}</td>
-                <td class="right-align">{{data.spend/(data.results/1000) | currency}}</td>
               </tr>
             </tbody>
           </table>

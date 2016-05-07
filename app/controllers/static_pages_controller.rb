@@ -35,30 +35,23 @@ class StaticPagesController < ApplicationController
 
         data = []
 
-        impressions_daily = AccountInsight.where(account_id: 'act_1219093434772270').select(:date, :impressions).map{|k,v| {date: k[:date], impressions: k[:impressions]}}
-        website_clicks_daily = AccountInsight.where(account_id: 'act_1219093434772270').select(:date, :website_clicks).map{|k,v| {date: k[:date], website_clicks: k[:website_clicks]}}
-        video_views = Action.where(account_id: 'act_1219093434772270', action_type: 'video_view', gender: nil, age: nil).map{|k,v| {date: k[:date], video_views: k[:value]}}
-        post_engagements = Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement', gender: nil, age: nil).map{|k,v| {date: k[:date], post_engagements: k[:value]}}
-
-        daily_data = impressions_daily + website_clicks_daily + video_views + post_engagements
-        daily_stats_data = daily_data.group_by{|h| h[:date]}.map{|k,v| v.reduce(:merge)}
-
         account_stats = {impressions: AccountInsight.where(account_id: 'act_1219093434772270').select(:impressions).sum(:impressions),
-                         website_clicks: AccountInsight.where(account_id: 'act_1219093434772270').select(:website_clicks).sum(:website_clicks),
+                         website_clicks: Action.where(account_id: 'act_1219093434772270', action_type: 'link_click', gender: nil, age: nil).sum(:value),
+                         website_conversions: Action.where(account_id: 'act_1219093434772270', action_type: 'offsite_conversion', gender: nil, age: nil).sum(:value),
                          video_views: Action.where(account_id: 'act_1219093434772270', action_type: 'video_view', gender: nil, age: nil).sum(:value),
-                         post_engagement: Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement', gender: nil, age: nil).sum(:value)
+                         post_engagement: Action.where(account_id: 'act_1219093434772270', action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
                        }
 
-        render json: audience_demographics
-        # render json: {date_range: "#{Date.parse(Action.where(account_id: 'act_1219093434772270').order('date').first.date).strftime("%b %e, %Y")} -
-        #                            #{Date.parse(Action.where(account_id: 'act_1219093434772270').order('date').last.date).strftime("%b %e, %Y")}",
-        #               overview: overview_stats,
-        #               daily_stats_data: daily_stats_data,
-        #               account_stats: account_stats,
-        #               cpm_placement: cpm_by_placement,
-        #               audiences: cpm_by_audience,
-        #               demographics: {gender_breakdowns: gender_demographics, age_breakdowns: age_demographics, audience_breakdowns: audience_demographics}
-        #             }.to_json
+        render json: {date_range: "#{Date.parse(Action.where(account_id: 'act_1219093434772270').order('date').first.date).strftime("%b %e, %Y")} -
+                                   #{Date.parse(Action.where(account_id: 'act_1219093434772270').order('date').last.date).strftime("%b %e, %Y")}",
+                      overview: overview_stats,
+                      account_stats: account_stats,
+                      cpm_placement: cpm_by_placement,
+                      audiences: cpm_by_audience,
+                      demographics: {gender_breakdowns: gender_demographics,
+                                     age_breakdowns: age_demographics,
+                                     audience_breakdowns: audience_demographics}
+                    }.to_json
       end
     end
   end
@@ -69,11 +62,13 @@ class StaticPagesController < ApplicationController
     spend = Campaign.where(account_id:1219093434772270).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
 
     results = [
-      {objective: "CONVERSIONS",     results: Action.where(action_type: ["offsite_conversion.fb_pixel_purchase", "offsite_conversion.fb_pixel_view_content"]).sum(:value)},
-      {objective: "LINK_CLICKS",     results: AccountInsight.where(account_id: 'act_1219093434772270').sum(:website_clicks)},
-      {objective: "POST_ENGAGEMENT", results: Action.where(account_id: 'act_1219093434772270', action_type: 'video_view').sum(:value)},
-      {objective: "VIDEO_VIEWS",     results: Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement').sum(:value)}
+      {objective: "CONVERSIONS",     results: CampaignAction.where(account_id: '1219093434772270', objective: 'CONVERSIONS', action_type: "offsite_conversion").sum(:value)},
+      {objective: "LINK_CLICKS",     results: CampaignAction.where(account_id: '1219093434772270', objective: 'LINK_CLICKS', action_type: "link_click").sum(:value)},
+      {objective: "POST_ENGAGEMENT", results: CampaignAction.where(account_id: '1219093434772270', objective: 'POST_ENGAGEMENT', action_type: "post_engagement").sum(:value)},
+      {objective: "VIDEO_VIEWS",     results: Action.where(account_id: 'act_1219093434772270', action_type: 'video_view',  gender: nil, age: nil).sum(:value)}
     ]
+
+    #Calculate VV by CampaignAction?
 
     combined_data = impressions + reach + spend + results
 
@@ -82,15 +77,15 @@ class StaticPagesController < ApplicationController
 
   def cpm_by_placement
     data = []
-    placements = [{name: 'Desktop News Feed', columns: ['desktop_feed', 'desktop_video_channel']},
-                  {name: 'Mobile News Feed', columns: ['mobile_feed', 'mobile_video_channel']},
+    placements = [{name: 'Desktop News Feed',    columns: ['desktop_feed', 'desktop_video_channel']},
+                  {name: 'Mobile News Feed',     columns: ['mobile_feed', 'mobile_video_channel']},
                   {name: 'Desktop Right Column', columns: 'right_hand'},
-                  {name: 'Instragram', columns: 'instagramstream'},
-                  {name: 'Audience Network', columns: 'mobile_external_only'}]
+                  {name: 'Instragram',           columns: 'instagramstream'},
+                  {name: 'Audience Network',     columns: 'mobile_external_only'}]
 
     placements.each do |placement|
       impressions = Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:impressions).to_f
-      spend = Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:spend)
+      spend =       Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:spend)
 
       data.push(placement: placement[:name], cpm: spend/(impressions/1000))
     end
@@ -112,20 +107,22 @@ class StaticPagesController < ApplicationController
     end
 
     return audiences
+
+    # Pull with CampaignAction
   end
 
   def gender_demographics
     gender_breakdowns = Array.new
-
     genders = ['male', 'female', 'unkown']
+    columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
+    gender_sum = Action.where(account_id: 'act_1219093434772270', action_type: columns, gender: [genders]).sum(:value)
 
     genders.each do |gender|
-      video_views =  Action.where(account_id: 'act_1219093434772270', action_type: 'video_view', gender: gender).sum(:value)
-      post_engagements = Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement', gender: gender).sum(:value)
-      conversions = Action.where(account_id: 'act_1219093434772270', action_type: 'offsite_conversion', gender: gender).sum(:value)
+      results = Action.where(account_id: 'act_1219093434772270', action_type: columns, gender: gender).sum(:value)
+      percentage = ((results/gender_sum)*100).round(1)
 
-      gender_breakdowns.push({gender: gender.capitalize, gender_with_data: "#{gender.capitalize}: #{number_with_delimiter((video_views + post_engagements + conversions).round)}",
-                              results: video_views + post_engagements + conversions})
+      gender_breakdowns.push({gender: gender.capitalize, gender_with_data: "#{gender.capitalize}: #{percentage}%",
+                              results: results})
     end
 
     return gender_breakdowns
@@ -133,76 +130,46 @@ class StaticPagesController < ApplicationController
 
   def age_demographics
     age_breakdowns = Array.new
-
     ages = Action.pluck('age').compact.uniq
+    columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
+    age_sum = Action.where(account_id: 'act_1219093434772270', action_type: columns, age: [ages]).sum(:value)
 
     ages.each do |age|
-      video_views =  Action.where(account_id: 'act_1219093434772270', action_type: 'video_view', age: age).sum(:value)
-      post_engagements = Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement', age: age).sum(:value)
-      conversions = Action.where(account_id: 'act_1219093434772270', action_type: 'offsite_conversion', age: age).sum(:value)
+      results = Action.where(account_id: 'act_1219093434772270', action_type: columns, age: age).sum(:value)
 
-      age_breakdowns.push({age: age, age_with_data: "#{age}: #{number_with_delimiter((video_views + post_engagements + conversions).round)}",
-                           results: video_views + post_engagements + conversions})
+      percentage = ((results/age_sum)*100).round(1)
+
+      age_breakdowns.push({age: age, age_with_data: "#{age}: #{percentage}%",
+                           results: results})
     end
 
     return age_breakdowns
   end
 
   def audience_demographics
-    age_breakdowns = Array.new
+    audience_demographics = Array.new
+    audiences = CampaignAction.where(account_id: '1219093434772270').pluck('audience').uniq
+    columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
+    total_results = CampaignAction.where(account_id: '1219093434772270', action_type: columns).sum(:value)
+    cleaned_audiences = Array.new
 
-    ages = Action.pluck('age').compact.uniq
+    audiences.each do |audience|
+      results = CampaignAction.where(account_id: '1219093434772270', action_type: columns, audience: audience).sum(:value)
+      percentage = (results/total_results)*100
 
-    ages.each do |age|
-      video_views =  Action.where(account_id: 'act_1219093434772270', action_type: 'video_view', age: age).sum(:value)
-      post_engagements = Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement', age: age).sum(:value)
-      conversions = Action.where(account_id: 'act_1219093434772270', action_type: 'offsite_conversion', age: age).sum(:value)
-
-      age_breakdowns.push({age: age, age_with_data: "#{age}: #{number_with_delimiter((video_views + post_engagements + conversions).round)}",
-                           results: video_views + post_engagements + conversions})
+      if percentage >= 1
+        cleaned_audiences.push(audience)
+      end
     end
 
-    return age_breakdowns
+    cleaned_audiences.each do |audience|
+      results = CampaignAction.where(account_id: '1219093434772270', action_type: columns, audience: audience).sum(:value)
+      audience_demographics.push(audience: audience, results: results)
+    end
+
+    return audience_demographics
   end
 
-  # def results_by_audience
-  #   # general_breakdowns = Array.new
-  #   # audiences = Array.new
-  #   #
-  #   # Campaign.where(account_id:1219093434772270).group(:name)
-  #   #
-  #   # Campaign.where(account_id:1219093434772270).pluck(:name).each do |audience|
-  #   #   audiences.push(audience.split('|')[1].strip)
-  #   # end
-  #   #
-  #   # uniq_audiences = audiences.uniq!
-  #   #
-  #   # uniq_audiences.each do |audience|
-  #   #   general_breakdowns.push(audience: audience, results: '1')
-  #   # end
-  #   #
-  #   # return general_breakdowns
-  #   #
-  #
-  #   # general_breakdowns = []
-  #   #
-  #   # Campaign.where(account_id:1219093434772270).group(:name).sum(:total_actions).each do |account_insight|
-  #   #   general_breakdowns.push(audience: account_insight[0].split('|')[1].strip, results: account_insight[1])
-  #   # end
-  #   #
-  #   # age_breakdowns = []
-  #   #
-  #   # AccountInsight.where(account_id: 'act_1219093434772270').where.not(age: nil).each do |account_insight|
-  #   #   age_breakdowns.push(account_insight)
-  #   # end
-  #   #
-  #   # gender_breakdowns = []
-  #   #
-  #   # AccountInsight.where(account_id: 'act_1219093434772270').where.not(gender: nil).each do |account_insight|
-  #   #   gender_breakdowns.push(account_insight)
-  #   # end
-  #   # Action.where(account_id: 'act_1219093434772270', action_type: 'post_engagement').all
-  # end
 
   def objective_name(objective)
     case objective
