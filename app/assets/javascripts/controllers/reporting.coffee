@@ -23,6 +23,7 @@
 
       $scope.reporting = reportingData
       createCpmChart(reportingData.cpm_placement)
+      createCpmChart(reportingData.cpr_placement)
       createAudiencesChart(reportingData.audiences)
       createGenderChart(reportingData.demographics.gender_breakdowns)
       createAgeChart(reportingData.demographics.age_breakdowns)
@@ -65,6 +66,44 @@
         colors: ['#29B6F6']
 
       $scope.cpmChart = cpmChart
+
+    createCprChart = (cprData)->
+      cprChart = {}
+      cprChart.type = 'ColumnChart'
+      cprChart.data = [
+        [
+         {type: 'string', label: 'Placement'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+         {type: 'number', label: 'CPR'}
+        ]
+      ]
+
+      _.forEach cpmData, (n) ->
+        cprChart.data.push([
+          n.placement
+          {v: "<div style='width: 220px; padding: 20px;'>" +
+              "<strong style='color: #424242'><p style='font-size: 200%'>" + n.placement + "</p></strong></span><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM<br><span style='font-size: 200%; color:#29B6F6;'>" + currencyFilter(n.cpm) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+          n.cpm
+        ])
+
+      cprChart.options =
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        tooltip: {isHtml: true}
+        focusTarget: 'category'
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
+        vAxis: { title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#29B6F6']
+
+      $scope.cprChart = cprChart
 
     createAudiencesChart = (objectives)->
       audiencesChart = {}
@@ -232,6 +271,8 @@
          {type: 'string', label: 'Audience'}
          {type: 'number', label: 'Results'}
          {type: 'string', role: 'annotation'}
+         {type: 'number', label: 'CPM'}
+         {type: 'string', role: 'annotation'}
          {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
         ]
       ]
@@ -245,6 +286,8 @@
           data.audience
           data.results
           percentage
+          data.cpm
+          currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
               "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
               "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['results']) + "<br></span></p>" +
@@ -259,9 +302,17 @@
         displayAnnotations: true
         tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
         legend: { position: 'none'}
-        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
+        series: {
+          0: {targetAxisIndex: 0},
+          1: {targetAxisIndex: 1}
+        }
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
+        vAxes: {
+          0: {title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}},
+          1: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
+        }
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
 

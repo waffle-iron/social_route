@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAHkYaq54guCrurvvsc9FawhGqs8QAKZCyIQfitMsvxL7973T36FlIqjdQHC6ZCvWpvbXOSdgD2SaaOnq3qvrWHVyreULBgnQWGOd4YeEEVn8DLSxl7d8sDjDO10ndac6RNohfK1UyCcndbvCslwgmMskialAZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAGAbQuYf7K7Oieo48jBBJNueBwTyaQhwgZAifPjkuZBHZCKN30sWYslbxaEy323xJZACljVVqZCFaj8AMaOadJHdjDNSDZAcV8IpYntQi1qfkcxX2E2LFL1TIv1eWdy6ItIwsBtMwTkqmKYwZBEoU8UtZAhxxC5d3QZDZD'
 
   def self.import
     puts "Start Import Rake Task \n"
@@ -11,11 +11,11 @@ module Importer
     puts "--------------------------------------------------------------------"
 
     puts "\nBuilding Account Data \n"
-    # build_accounts
+    build_accounts
     puts "Done \n"
 
     puts "\nBuilding Account Insight Data \n"
-    # build_account_insights
+    build_account_insights
     puts "Done \n\n"
 
     puts "--------------------------------------------------------------------"
@@ -27,7 +27,7 @@ module Importer
     puts "Done \n"
 
     puts "\nBuilding Campaign Insight Data \n"
-    # build_campaigns_insights
+    build_campaigns_insights
     puts "Done \n\n"
 
     puts "--------------------------------------------------------------------"
@@ -35,7 +35,7 @@ module Importer
     puts "--------------------------------------------------------------------"
 
     puts "\nBuilding Ads Data \n"
-    build_ads
+    # build_ads
     puts "Done \n"
 
     puts "Import sucessfull \n\n"
@@ -186,7 +186,7 @@ module Importer
     campaign_ids = set_campaign_ids
 
     campaign_insights_columns = ['account_id','actions','campaign_name',
-                                 'objective']
+                                 'objective','spend','impressions']
 
     campaign_ids.each do |campaign_id|
       http_response = RestClient.get "#{BASE_URL}/#{campaign_id['id']}/insights",
@@ -199,9 +199,12 @@ module Importer
       raw_data.each do |campaign_insight|
         CampaignInsight.create(
           account_id:    campaign_insight['account_id'],
-          campaign_id:   campaign_id,
+          campaign_id:   campaign_id['id'],
           objective:     campaign_insight['objective'],
-          campaign_name: campaign_insight['campaign_name']
+          campaign_name: campaign_insight['campaign_name'],
+          spend:         campaign_insight['spend'],
+          impressions:   campaign_insight['impressions'],
+          audience:      campaign_insight['campaign_name'].split('|')[1].strip
         )
 
         campaign_insight['actions'].each do |action|
@@ -210,7 +213,7 @@ module Importer
               action_type: action['action_type'],
               value: action['value'],
               account_id: campaign_insight['account_id'],
-              campaign_id: campaign_id,
+              campaign_id: campaign_id['id'],
               campaign_name: campaign_insight['campaign_name'],
               objective: campaign_insight['objective'],
               audience: campaign_insight['campaign_name'].split('|')[1].strip

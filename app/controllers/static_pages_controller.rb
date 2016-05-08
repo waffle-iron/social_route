@@ -85,9 +85,27 @@ class StaticPagesController < ApplicationController
 
     placements.each do |placement|
       impressions = Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:impressions).to_f
-      spend =       Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:spend)
+      spend = Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:spend)
 
       data.push(placement: placement[:name], cpm: spend/(impressions/1000))
+    end
+
+    return data
+  end
+
+  def cpm_by_placement
+    data = []
+    placements = [{name: 'Desktop News Feed',    columns: ['desktop_feed', 'desktop_video_channel']},
+                  {name: 'Mobile News Feed',     columns: ['mobile_feed', 'mobile_video_channel']},
+                  {name: 'Desktop Right Column', columns: 'right_hand'},
+                  {name: 'Instragram',           columns: 'instagramstream'},
+                  {name: 'Audience Network',     columns: 'mobile_external_only'}]
+
+    placements.each do |placement|
+      results = Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:impressions).to_f
+      spend = Ad.where(account_id:1219093434772270, placement: placement[:columns]).sum(:spend)
+
+      data.push(placement: placement[:name], cpr: spend/results)
     end
 
     return data
@@ -163,8 +181,11 @@ class StaticPagesController < ApplicationController
     end
 
     cleaned_audiences.each do |audience|
+      spend = CampaignInsight.where(account_id: '1219093434772270', audience: audience).sum(:spend)
       results = CampaignAction.where(account_id: '1219093434772270', action_type: columns, audience: audience).sum(:value)
-      audience_demographics.push(audience: audience, results: results)
+      impressions = CampaignInsight.where(account_id: '1219093434772270', audience: audience).sum(:impressions).to_f
+
+      audience_demographics.push(audience: audience, results: results, cpm: spend/(impressions/1000))
     end
 
     return audience_demographics
