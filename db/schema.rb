@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160508025759) do
+ActiveRecord::Schema.define(version: 20160508225626) do
 
   create_table "account_insights", force: :cascade do |t|
     t.string   "account_id"
@@ -48,6 +48,19 @@ ActiveRecord::Schema.define(version: 20160508025759) do
     t.string   "gender"
   end
 
+  create_table "ad_actions", force: :cascade do |t|
+    t.string   "action_type"
+    t.float    "value"
+    t.string   "account_id"
+    t.string   "campaign_id"
+    t.string   "campaign_name"
+    t.string   "objective"
+    t.string   "audience"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.string   "placement"
+  end
+
   create_table "ads", force: :cascade do |t|
     t.string   "date_start"
     t.string   "date_stop"
@@ -66,6 +79,8 @@ ActiveRecord::Schema.define(version: 20160508025759) do
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
     t.string   "placement"
+    t.string   "campaign_name"
+    t.string   "audience"
   end
 
   create_table "campaign_actions", force: :cascade do |t|
@@ -115,6 +130,7 @@ ActiveRecord::Schema.define(version: 20160508025759) do
     t.float    "cpp"
     t.integer  "reach"
     t.integer  "total_actions"
+    t.string   "audience"
   end
 
   create_table "users", force: :cascade do |t|

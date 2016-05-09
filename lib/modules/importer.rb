@@ -2,42 +2,35 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAGAbQuYf7K7Oieo48jBBJNueBwTyaQhwgZAifPjkuZBHZCKN30sWYslbxaEy323xJZACljVVqZCFaj8AMaOadJHdjDNSDZAcV8IpYntQi1qfkcxX2E2LFL1TIv1eWdy6ItIwsBtMwTkqmKYwZBEoU8UtZAhxxC5d3QZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAPFOtQtGjnbarGYZBCJZC2pkpJeZAyRwbGcHQB2NeXGmk5B8c8g3NnJmMAKRQtBlTb6QuQY0ZBd7L6ES4opqyuCHpBr2pETBSxXra9GZAt6WebhSKvMBSFdAnNxZAhUr617lUUtU0wdPzIYFqXTqTwQibzDaf9vwZDZD'
 
   def self.import
     puts "Start Import Rake Task \n"
     puts "--------------------------------------------------------------------"
     puts "|                     Generate Account Data                        |"
     puts "--------------------------------------------------------------------"
-
-    puts "\nBuilding Account Data \n"
+    puts "|                     Building Account Data                        |"
     build_accounts
-    puts "Done \n"
-
-    puts "\nBuilding Account Insight Data \n"
+    puts "|                             Done                                 |"
+    puts "|                 Building Account Insight Data                    |"
     build_account_insights
-    puts "Done \n\n"
-
+    puts "|                             Done                                 |"
     puts "--------------------------------------------------------------------"
     puts "|                     Generate Campaign Data                       |"
     puts "--------------------------------------------------------------------"
-
-    puts "\nBuilding Campaign Data \n"
-    # build_campaigns
-    puts "Done \n"
-
-    puts "\nBuilding Campaign Insight Data \n"
+    puts "|                     Building Campaign Data                       |"
+    build_campaigns
+    puts "|                             Done                                 |"
+    puts "|                 Building Campaign Insight Data                   |"
     build_campaigns_insights
-    puts "Done \n\n"
-
+    puts "|                             Done                                 |"
     puts "--------------------------------------------------------------------"
-    puts "|                     Generate Ad Data                             |"
+    puts "|                        Generate Ad Data                          |"
     puts "--------------------------------------------------------------------"
-
-    puts "\nBuilding Ads Data \n"
-    # build_ads
-    puts "Done \n"
-
+    puts "|                        Building Ads Data                         |"
+    build_ads
+    puts "|                             Done                                 |"
+    puts "--------------------------------------------------------------------"
     puts "Import sucessfull \n\n"
   end
 
@@ -166,6 +159,7 @@ module Importer
           start_time:    campaign['date_start'],
           stop_time:     campaign['date_stop'],
           placement:     campaign['placement'],
+          audience:      campaign['campaign_name'].split('|')[1].strip,
           spend:         campaign['spend'],
           frequency:     campaign['frequency'],
           impressions:   campaign['impressions'],
@@ -230,9 +224,11 @@ module Importer
 
   def self.build_ads
     Ad.delete_all
+    AdAction.delete_all
 
     ad_columns = ['account_id','ad_id','ad_name','campaign_id','objective',
-                  'impressions','spend','frequency','reach']
+                  'impressions','spend','frequency','reach', 'actions',
+                  'campaign_name']
 
     ad_ids = JSON.parse(RestClient.get "#{BASE_URL}/act_1219093434772270/ads", {:params => {:access_token => ACCESS_TOKEN, 'date_preset' => 'lifetime'}})['data']
 
@@ -246,25 +242,46 @@ module Importer
           ad_id: ad['ad_id'],
           ad_name: ad['ad_name'],
           campaign_id: ad['campaign_id'],
+          campaign_name: ad['campaign_name'],
           objective: ad['objective'],
           impressions: ad['impressions'],
           spend: ad['spend'],
           frequency: ad['frequency'],
           reach: ad['reach'],
-          placement: ad['placement']
+          placement: ad['placement'],
+          audience: ad['campaign_name'].split('|')[1].strip
         )
-      end
 
-      # Output Ad Data
-      puts "Ads Created: #{Ad.count}"
+        unless ad['actions'].nil? || ad['actions'].blank?
+          ad['actions'].each do |action|
+            AdAction.create(
+              action_type: action['action_type'],
+              value: action['value'],
+              account_id: ad['account_id'],
+              campaign_id: ad['campaign_id'],
+              campaign_name: ad['campaign_name'],
+              objective: ad['objective'],
+              placement: ad['placement'],
+              audience: ad['campaign_name'].split('|')[1].strip
+            )
+          end
+        end
+      end
     end
+
+    # Output Ad and Ad Action Data
+    puts "Ads Created: #{Ad.count}"
+    puts "Ads Created: #{AdAction.count}"
   end
 
   private
 
   def self.account_ids
     # Account.pluck('account_id').uniq
-    ['act_1219093434772270']
+    # ['act_1219093434772270']
+
+    #Chocolate Exhibit
+    ['act_1219093704772243']
     # ['act_1219093704772243', 'act_1219093848105562', 'act_1219094361438844', 'act_1219094488105498', 'act_1219094644772149']
   end
 
@@ -272,7 +289,7 @@ module Importer
     campaign_ids = []
 
     account_ids.each do |account_id|
-      http_response = RestClient.get "#{BASE_URL}/act_1219093434772270/campaigns",
+      http_response = RestClient.get "#{BASE_URL}/act_1219093704772243/campaigns",
                                       {:params => {'access_token' => ACCESS_TOKEN,
                                                    'date_preset' => 'lifetime'}}
 

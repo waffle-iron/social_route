@@ -22,8 +22,8 @@
           objectiveData.objectiveName = objectiveData.objective
 
       $scope.reporting = reportingData
-      createCpmChart(reportingData.cpm_placement)
-      createCpmChart(reportingData.cpr_placement)
+      createCpmChart(reportingData.cpm_cpr_placement)
+      # createCprChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
       createGenderChart(reportingData.demographics.gender_breakdowns)
       createAgeChart(reportingData.demographics.age_breakdowns)
@@ -78,15 +78,15 @@
         ]
       ]
 
-      _.forEach cpmData, (n) ->
+      _.forEach cprData, (n) ->
         cprChart.data.push([
           n.placement
           {v: "<div style='width: 220px; padding: 20px;'>" +
               "<strong style='color: #424242'><p style='font-size: 200%'>" + n.placement + "</p></strong></span><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM<br><span style='font-size: 200%; color:#29B6F6;'>" + currencyFilter(n.cpm) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPR<br><span style='font-size: 200%; color:#29B6F6;'>" + currencyFilter(n.cpr) + "<br></span></p>" +
               "</div>", p: {}
           }
-          n.cpm
+          n.cpr
         ])
 
       cprChart.options =
@@ -101,7 +101,7 @@
         vAxis: { title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#29B6F6']
+        colors: ['#E91E63']
 
       $scope.cprChart = cprChart
 
