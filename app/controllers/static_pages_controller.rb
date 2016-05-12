@@ -16,7 +16,7 @@ class StaticPagesController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: 'Cat'
+        render json: campaign_data
       end
     end
   end
@@ -202,6 +202,35 @@ class StaticPagesController < ApplicationController
     return audience_demographics
   end
 
+  def campaign_data
+    raw_data = Array.new
+    objectives = Campaign.where(account_id:@account_id_number).pluck('objective').uniq
+
+    objectives.each do |objective|
+      campaign_data = Array.new
+      campaigns = CampaignInsight.where(account_id:@account_id_number, objective: objective)
+
+      campaigns.each do |campaign|
+        results = CampaignAction.where(campaign_id: campaign.campaign_id, action_type: result_columns(campaign.objective)).sum(:value)
+        rr = (results/campaign.impressions.to_f)*100
+        cpm = campaign.spend/(campaign.impressions.to_f/1000)
+        score = cpm * (1/rr)
+
+        campaign_data.push(campaign_id: campaign.campaign_id,
+                           campaign_name: campaign.campaign_name,
+                           rr:            rr,
+                           impressions:   campaign.impressions,
+                           cpm:           cpm,
+                           spend:         campaign.spend,
+                           score:         score)
+      end
+
+      raw_data.push(objective: objective_name(objective), campaign_data: campaign_data)
+    end
+
+    return raw_data
+  end
+
   private
 
   def set_account_params
@@ -223,6 +252,19 @@ class StaticPagesController < ApplicationController
       "Website Conversions"
     else
       objective
+    end
+  end
+
+  def result_columns(objective)
+    case objective
+    when "LINK_CLICKS"
+      ['link_click']
+    when "POST_ENGAGEMENT"
+      ['comment', 'post', 'post_like', 'like']
+    when "VIDEO_VIEWS"
+      ['video_view']
+    when "CONVERSIONS"
+      ['offsite_conversion']
     end
   end
 end

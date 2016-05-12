@@ -3,7 +3,7 @@
   'Reporting'
   '$filter'
 
-  @DashboardCtrl = ($scope, Reporting,  $filter) ->
+  @DashboardCtrl = ($scope, Reporting, $filter) ->
     numberFilter = $filter('number')
     currencyFilter = $filter('currency')
 
@@ -28,7 +28,6 @@
       createAgeChart(reportingData.demographics.age_breakdowns)
       createGeneralChart(reportingData.demographics.audience_breakdowns)
       createGeneralChartCPM(reportingData.demographics.audience_breakdowns)
-
 
     createCpmChart = (cpmData)->
       cpmChart = {}

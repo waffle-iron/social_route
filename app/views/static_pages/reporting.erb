@@ -1,11 +1,11 @@
-<% provide(:title, "Overview: #{@account.name}") %>
+<% provide(:title, "Reporting: #{@account.name}") %>
 
 <center>
-  <h1>
+  <h2>
     <%= @account.name %>
     <br>
     Reporting
-  </h1>
+  </h2>
 </center>
 
 <div ng-controller='ReportingCtrl'>
@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-<!--     <div class='col m3'>
+    <div class='col m3'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1" style='height: 160px;'>
           <h4 class="center-align" style="color: #8E24AA">
@@ -39,7 +39,7 @@
           <h6 class="center-align">Website Conversions</h6><br>
         </div>
       </div>
-    </div> -->
+    </div>
     <div class='col m3'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1" style='height: 160px;'>

@@ -15,6 +15,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'rest-client'
 gem 'rails-angular-material'
 gem 'toastr-rails'
+gem 'colorize'
 
 group :development do
   gem 'web-console', '~> 2.0'
