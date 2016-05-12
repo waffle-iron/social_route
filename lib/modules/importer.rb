@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAPFOtQtGjnbarGYZBCJZC2pkpJeZAyRwbGcHQB2NeXGmk5B8c8g3NnJmMAKRQtBlTb6QuQY0ZBd7L6ES4opqyuCHpBr2pETBSxXra9GZAt6WebhSKvMBSFdAnNxZAhUr617lUUtU0wdPzIYFqXTqTwQibzDaf9vwZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAAZCJAHBaRxACk0jdMDbryK99jAZC0gPe4bJj1pSQ5UO39ZAu0b5MItoJUohZAJrehOPcmFuhoBcGEVydu6XKJ3W1OUatGcMBnl2EzV318oFjVgDfKNpdZAj0KZCsC08bHjVKEGsHb1FmNxbNE5TYAKr7cdwAYuAZDZD'
 
   def self.import
     puts "Start Import Rake Task \n"
@@ -230,7 +230,7 @@ module Importer
                   'impressions','spend','frequency','reach', 'actions',
                   'campaign_name']
 
-    ad_ids = JSON.parse(RestClient.get "#{BASE_URL}/act_1219093434772270/ads", {:params => {:access_token => ACCESS_TOKEN, 'date_preset' => 'lifetime'}})['data']
+    ad_ids = JSON.parse(RestClient.get "#{BASE_URL}/act_1219094488105498/ads", {:params => {:access_token => ACCESS_TOKEN, 'date_preset' => 'lifetime'}})['data']
 
     ad_ids.each do |ad_id|
       http_response = RestClient.get "#{BASE_URL}/#{ad_id['id']}/insights", {:params => {:access_token => ACCESS_TOKEN, 'fields' => ad_columns, :date_preset => 'lifetime', :breakdowns => 'placement'}}
@@ -277,19 +277,14 @@ module Importer
   private
 
   def self.account_ids
-    # Account.pluck('account_id').uniq
-    # ['act_1219093434772270']
-
-    #Chocolate Exhibit
-    ['act_1219093704772243']
-    # ['act_1219093704772243', 'act_1219093848105562', 'act_1219094361438844', 'act_1219094488105498', 'act_1219094644772149']
+    ['act_1219094488105498']
   end
 
   def self.set_campaign_ids
     campaign_ids = []
 
     account_ids.each do |account_id|
-      http_response = RestClient.get "#{BASE_URL}/act_1219093704772243/campaigns",
+      http_response = RestClient.get "#{BASE_URL}/act_1219094488105498/campaigns",
                                       {:params => {'access_token' => ACCESS_TOKEN,
                                                    'date_preset' => 'lifetime'}}
 

@@ -23,11 +23,12 @@
 
       $scope.reporting = reportingData
       createCpmChart(reportingData.cpm_cpr_placement)
-      # createCprChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
       createGenderChart(reportingData.demographics.gender_breakdowns)
       createAgeChart(reportingData.demographics.age_breakdowns)
       createGeneralChart(reportingData.demographics.audience_breakdowns)
+      createGeneralChartCPM(reportingData.demographics.audience_breakdowns)
+
 
     createCpmChart = (cpmData)->
       cpmChart = {}
@@ -60,7 +61,7 @@
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
+        vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency' }
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
         colors: ['#29B6F6']
@@ -97,7 +98,7 @@
         focusTarget: 'category'
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
-        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
         vAxis: { title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
@@ -113,9 +114,10 @@
         [
          {type: 'string', label: 'Audience'}
          {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
-         {type: 'number', label: 'CPM Audience #1'}
-         {type: 'number', label: 'CPM Audience #2'}
-         {type: 'number', label: 'CPM Audience #3'}
+         {type: 'number', label: '10,000 Audience'}
+         {type: 'number', label: '160,000 Audience'}
+         {type: 'number', label: '2,200,000 Audience'}
+         {type: 'number', label: '520,000 Audience'}
         ]
       ]
 
@@ -124,27 +126,52 @@
             cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
             cpm_2 = null
             cpm_3 = null
+            cpm_4 = null
             audience_1 = objectiveData.audiences[0]['audience']
             audience_2 = null
             audience_3 = null
+            audience_4 = null
           if objectiveData.audiences.length is 2
             cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
             cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
             cpm_3 = null
+            cpm_4 = null
             audience_1 = objectiveData.audiences[0]['audience']
             audience_2 = objectiveData.audiences[1]['audience']
             audience_3 = null
+            audience_4 = null
           if objectiveData.audiences.length is 3
             cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
             cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
             cpm_3 = objectiveData.audiences[2]['spend']/(objectiveData.audiences[2]['impressions']/1000)
+            cpm_4 = null
             audience_1 = objectiveData.audiences[0]['audience']
             audience_2 = objectiveData.audiences[1]['audience']
             audience_3 = objectiveData.audiences[2]['audience']
+            audience_4 = null
+
+          if objectiveData.audiences.length is 4
+            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
+            cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
+            cpm_3 = objectiveData.audiences[2]['spend']/(objectiveData.audiences[2]['impressions']/1000)
+            cpm_4 = objectiveData.audiences[3]['spend']/(objectiveData.audiences[3]['impressions']/1000)
+            audience_1 = objectiveData.audiences[0]['audience']
+            audience_2 = objectiveData.audiences[1]['audience']
+            audience_3 = objectiveData.audiences[2]['audience']
+            audience_4 = objectiveData.audiences[3]['audience']
 
           audiencesChart.data.push([
             objectiveData.objective
-            if audience_3 isnt null
+            if audience_4 isnt null
+              {v: "<div style='width: 180px; padding: 20px;'>" +
+                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_2 + " Audience <br><span style='font-size: 200%; color:#D95F02;'>" +   currencyFilter(cpm_2) + "<br></span></p>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_3 + " Audience <br><span style='font-size: 200%; color:#7570B3;'>" +   currencyFilter(cpm_3) + "<br></span></p>" +
+                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_4 + " Audience <br><span style='font-size: 200%; color:#7570B3;'>" +   currencyFilter(cpm_4) + "<br></span></p>" +
+                  "</div>", p: {}
+              }
+            else if audience_3 isnt null
               {v: "<div style='width: 180px; padding: 20px;'>" +
                   "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
                   "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
@@ -168,6 +195,7 @@
             cpm_1
             cpm_2
             cpm_3
+            cpm_4
           ])
 
       audiencesChart.options =
@@ -177,12 +205,12 @@
         tooltip: {isHtml: true}
         animation: { startup: true, duration: 1000, easing: 'in' }
         focusTarget: 'category'
-        legend: { position: 'none'}
-        hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
+        legend: { position: 'bottom'}
+        hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }, format: 'currency'  }
         vAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '70%', height: '80%'}
+        chartArea: {width: '70%', height: '75%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#1B9E77', '#D95F02', '#7570B3']
+        colors: ['#1B9E77', '#D95F02', '#7570B3', '#3D5AFE']
 
       $scope.audiencesChart = audiencesChart
 
@@ -271,8 +299,6 @@
          {type: 'string', label: 'Audience'}
          {type: 'number', label: 'Results'}
          {type: 'string', role: 'annotation'}
-         {type: 'number', label: 'CPM'}
-         {type: 'string', role: 'annotation'}
          {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
         ]
       ]
@@ -286,6 +312,49 @@
           data.audience
           data.results
           percentage
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['results']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+        ])
+
+      generalChart.options =
+        title: 'Results by Audience'
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
+        vAxis: {title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, viewWindowMode:'explicit', viewWindow: {min:0}}
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+
+      $scope.generalChart = generalChart
+
+    createGeneralChartCPM = (generalData)->
+      generalChartCPM = {}
+      generalChartCPM.type = 'ColumnChart'
+      generalChartCPM.data = [
+        [
+         {type: 'string', label: 'Audience'}
+         {type: 'number', label: 'CPM'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+        ]
+      ]
+
+      _.forEach generalData, (data) ->
+        percentage_raw = Math.round((data.results/(_.sumBy(generalData, 'results'))*100)*10)/10
+
+        percentage = percentage_raw + '%'
+
+        generalChartCPM.data.push([
+          data.audience
           data.cpm
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
@@ -295,7 +364,8 @@
           }
         ])
 
-      generalChart.options =
+      generalChartCPM.options =
+        title: 'CPM by Audience'
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
         is3D: true
@@ -304,17 +374,12 @@
         animation: { startup: true, duration: 1000, easing: 'in' }
         focusTarget: 'datum'
         legend: { position: 'none'}
-        series: {
-          0: {targetAxisIndex: 0},
-          1: {targetAxisIndex: 1}
-        }
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
-        vAxes: {
-          0: {title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}},
-          1: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
-        }
+        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#00838F']
 
-      $scope.generalChart = generalChart
+      $scope.generalChartCPM = generalChartCPM
+
 ]

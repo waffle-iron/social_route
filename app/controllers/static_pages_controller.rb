@@ -27,9 +27,9 @@ class StaticPagesController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        impressions = Ad.where(account_id:1219093434772270).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
-        reach = Ad.where(account_id:1219093434772270).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
-        spend = Ad.where(account_id:1219093434772270).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
+        impressions = Ad.where(account_id: @account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
+        reach = Ad.where(account_id: @account_id_number).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
+        spend = Ad.where(account_id: @account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
 
         final_data = impressions + reach + spend
         json_data = final_data.group_by{|h| h[:objective]}.map{|k,v| v.reduce(:merge)}
@@ -60,9 +60,9 @@ class StaticPagesController < ApplicationController
   end
 
   def overview_stats
-    impressions = Campaign.where(account_id:@account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
-    reach = Campaign.where(account_id:@account_id_number).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
-    spend = Campaign.where(account_id:@account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
+    impressions = Campaign.where(account_id: @account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
+    reach = Campaign.where(account_id: @account_id_number).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
+    spend = Campaign.where(account_id: @account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
 
     results = [
       {objective: "CONVERSIONS",     results: CampaignAction.where(account_id: @account_id_number, objective: 'CONVERSIONS', action_type: "offsite_conversion").sum(:value)},
@@ -206,8 +206,8 @@ class StaticPagesController < ApplicationController
 
   def set_account_params
     # flash[:success] = params['act_id']
-    @account_id = 'act_1219093704772243'
-    @account_id_number = '1219093704772243'
+    @account_id = 'act_1219094488105498'
+    @account_id_number = '1219094488105498'
     # params['account_id'].to_s[4..-1]
   end
 
