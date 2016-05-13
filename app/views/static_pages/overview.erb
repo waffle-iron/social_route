@@ -27,7 +27,12 @@
           </thead>
           <tbody>
             <tr ng-repeat="campaign in data.campaign_data | orderBy: 'campaign_name'">
-              <td>{{campaign.campaign_name}}</td>
+              <td>
+                <a href="/overview/adsets?campaign_id={{campaign.campaign_id}}"
+                   style="color: #29B6F6 !important; ">
+                  {{campaign.campaign_name}}
+                </a>
+              </td>
               <td class="right-align">{{campaign.rr | number:2}}%</td>
               <td class="right-align">{{campaign.impressions | number}}</td>
               <td class="right-align">{{campaign.cpm | currency}}</td>

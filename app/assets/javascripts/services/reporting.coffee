@@ -2,7 +2,7 @@
   '$resource'
 
   ($resource) ->
-    Reporting = $resource '/reporting/:id.json', id: '@id',
+    Reporting = $resource '/api/reporting/:id.json', id: '@id',
       index:
         method: 'GET'
         isArray: false

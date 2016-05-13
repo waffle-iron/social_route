@@ -1,0 +1,51 @@
+<% provide(:title, "Overview Adsets: #{@campaign.name}") %>
+
+<center>
+  <h2>
+    <%= @campaign.name %>
+    <br>
+    Adset Overview
+  </h2>
+</center>
+
+<div ng-controller='OverviewCtrl'>
+  <div class="card white darken-1">
+    <div class="card-content grey-text text-darken-1">
+      <div ng-repeat="data in overview | orderBy: 'objective'">
+        <h4 class="left-align">{{data.objective}}</h4><br>
+        <table class="bordered responsive-table highlight">
+          <thead>
+            <tr>
+              <th style='width: 40%;'>Campaign Name</th>
+              <th class="right-align">RR</th>
+              <th class="right-align">Impressions</th>
+              <th class="right-align">CPM</th>
+              <th class="right-align">Spend</th>
+              <th class="right-align">Score</th>
+              <th  class="right-align"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="campaign in data.campaign_data | orderBy: 'campaign_name'">
+              <td>
+                <a href="/overview/adsets?campaign_id={{campaign.campaign_id}}"
+                   style="color: #29B6F6 !important; ">
+                  {{campaign.campaign_name}}
+                </a>
+              </td>
+              <td class="right-align">{{campaign.rr | number:2}}%</td>
+              <td class="right-align">{{campaign.impressions | number}}</td>
+              <td class="right-align">{{campaign.cpm | currency}}</td>
+              <td class="right-align">{{campaign.spend | currency}}</td>
+              <td class="right-align">{{campaign.score | number:5}}</td>
+              <td>
+                <i class="material-icons" style='color: #FF9800' ng-if="campaign.best == 'yes'">grade</i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br><br>
+      </div>
+    </div>
+  </div>
+</div>

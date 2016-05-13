@@ -2,12 +2,21 @@
   '$scope'
   'Overview'
   '$filter'
+  '$location'
 
-  @OverviewCtrl = ($scope, Overview, $filter) ->
-    numberFilter = $filter('number')
-    currencyFilter = $filter('currency')
+  @OverviewCtrl = ($scope, Overview, $filter, $location) ->
+    getParameterByName = (name) ->
+      url = window.location.href
+      name = name.replace(/[\[\]]/g, '\\$&')
+      regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
+      results = regex.exec(url)
+      if !results
+        return null
+      if !results[2]
+        return ''
+      decodeURIComponent results[2].replace(/\+/g, ' ')
 
-    Overview.index().$promise
+    Overview.index(account_id: getParameterByName('account_id')).$promise
     .then (overviewData) ->
       best_campaigns = []
       best_campaigns_ids = []
@@ -28,5 +37,7 @@
             campaign.best = 'no'
 
       $scope.overview = overviewData
+
+
 
 ]

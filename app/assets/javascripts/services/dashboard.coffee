@@ -2,7 +2,7 @@
   '$resource'
 
   ($resource) ->
-    Dashboard = $resource '/dashboard/:id.json', id: '@id',
+    Dashboard = $resource '/api/dashboard/:id.json', id: '@id',
       index:
         method: 'GET'
         isArray: true

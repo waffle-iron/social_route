@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160508225626) do
+ActiveRecord::Schema.define(version: 20160513030159) do
 
   create_table "account_insights", force: :cascade do |t|
     t.string   "account_id"
@@ -80,6 +80,18 @@ ActiveRecord::Schema.define(version: 20160508225626) do
     t.datetime "updated_at",    null: false
     t.string   "placement"
     t.string   "campaign_name"
+    t.string   "audience"
+  end
+
+  create_table "adsets", force: :cascade do |t|
+    t.string   "name"
+    t.string   "adset_id"
+    t.string   "account_id"
+    t.string   "campaign_id"
+    t.string   "status"
+    t.float    "daily_budget"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
     t.string   "audience"
   end
 

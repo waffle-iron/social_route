@@ -7,7 +7,18 @@
     numberFilter = $filter('number')
     currencyFilter = $filter('currency')
 
-    Reporting.index().$promise
+    getParameterByName = (name) ->
+      url = window.location.href
+      name = name.replace(/[\[\]]/g, '\\$&')
+      regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
+      results = regex.exec(url)
+      if !results
+        return null
+      if !results[2]
+        return ''
+      decodeURIComponent results[2].replace(/\+/g, ' ')
+
+    Reporting.index(account_id: getParameterByName('account_id')).$promise
     .then (reportingData) ->
       _.forEach reportingData.overview, (objectiveData) ->
         if objectiveData.objective is "CONVERSIONS"
@@ -29,7 +40,7 @@
       createGeneralChart(reportingData.demographics.audience_breakdowns)
       createGeneralChartCPM(reportingData.demographics.audience_breakdowns)
 
-    createCpmChart = (cpmData)->
+    createCpmChart = (cpmData) ->
       cpmChart = {}
       cpmChart.type = 'ColumnChart'
       cpmChart.data = [

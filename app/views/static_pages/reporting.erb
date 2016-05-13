@@ -20,7 +20,7 @@
         </div>
       </div>
     </div>
-    <div class='col m3'>
+    <div class='col m2'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1" style='height: 160px;'>
           <h4 class="center-align" style="color: #DC3912">
@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <div class='col m3'>
+    <div class='col m2'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1" style='height: 160px;'>
           <h4 class="center-align" style="color: #8E24AA">
@@ -40,7 +40,7 @@
         </div>
       </div>
     </div>
-    <div class='col m3'>
+    <div class='col m2'>
       <div class="card white darken-1">
         <div class="card-content grey-text text-darken-1" style='height: 160px;'>
           <h4 class="center-align" style="color: #109618">
@@ -78,7 +78,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-if='data.results >0' ng-repeat="data in reporting.overview | orderBy: 'objectiveName'">
+              <tr ng-repeat="data in reporting.overview | orderBy: 'objectiveName'">
                 <td>{{data.objectiveName}}</td>
                 <td class="right-align">{{data.results | number:0}}</td>
                 <td class="right-align">{{data.spend/data.results | currency}}</td>
