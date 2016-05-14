@@ -35,8 +35,7 @@
       $scope.reporting = reportingData
       createCpmChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
-      createGenderChart(reportingData.demographics.gender_breakdowns)
-      createAgeChart(reportingData.demographics.age_breakdowns)
+      createAgeGenderChart(reportingData.demographics.age_and_gender)
       createGeneralChart(reportingData.demographics.audience_breakdowns)
       createGeneralChartCPM(reportingData.demographics.audience_breakdowns)
 
@@ -224,82 +223,60 @@
 
       $scope.audiencesChart = audiencesChart
 
-    createGenderChart = (genderData)->
-      genderChart = {}
-      genderChart.type = 'PieChart'
-      genderChart.data = [
+    createAgeGenderChart = (ageGenderData) ->
+      sum_male =numberFilter(_.sumBy(ageGenderData, 'male_results')*100, 0)
+      sum_female =numberFilter(_.sumBy(ageGenderData, 'female_results')*100, 0)
+
+      ageGenderChart = {}
+      ageGenderChart.type = 'ColumnChart'
+      ageGenderChart.data = [
         [
-         {type: 'string', label: 'Gender', p: {}}
-         {type: 'string', label: 'Results', p: {}}
+         {type: 'string', label: 'Gender'}
          {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+         {type: 'number', label: 'Male ' + sum_male + '%'}
+         {type: 'string', role: 'annotation'}
+         {type: 'number', label: 'Female ' + sum_female  + '%'}
+         {type: 'string', role: 'annotation'}
         ]
       ]
 
-      _.forEach genderData, (n) ->
-        genderChart.data.push([
-          n.gender_with_data
-          n.results
-          {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + n.gender + "</strong></span><br><br>" +
-                "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#616161;'>" + numberFilter(n.results) + "<br></span></p>" +
+      _.forEach ageGenderData, (n) ->
+        ageGenderChart.data.push([
+          n.age
+          {v: "<div style='width: 220px; padding: 20px;'>" +
+              "<strong style='color: #424242'><p style='font-size: 200%'>Age: " + n.age + "</p></strong></span><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#304FFE;'>" + numberFilter(n.male_results * 100, 2) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#F50057;'>" + numberFilter(n.female_results * 100, 2) + '%' + "<br></span></p>" +
               "</div>", p: {}
           }
+          numberFilter(n.male_results * 100, 2)
+          numberFilter(n.male_results * 100, 2) + '%'
+          numberFilter(n.female_results * 100, 2)
+          numberFilter(n.female_results * 100, 2) + '%'
         ])
 
-      genderChart.options =
-        legend: 'none',
-        pieSliceText: 'label',
+      ageGenderChart.options =
         titleTextStyle: {color: '#797575' }
         displayExactValues: true
+        is3D: true
         tooltip: {isHtml: true}
+        focusTarget: 'category'
+        displayAnnotations: true
+        bar: {groupWidth: "95%"},
         animation: { startup: true, duration: 1000, easing: 'in' }
-        legend: { position: 'none'}
+        legend: { position: 'top', textStyle: {color: '#797575' }}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '100%', height: '100%'}
+        vAxis:{
+         baselineColor: '#fff',
+         gridlineColor: '#fff',
+         textPosition: 'none'
+       }
+        chartArea: {width: '100%', height: '90%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#2196F3', '#F06292', '#BDBDBD']
+        colors: ['#304FFE', '#F50057']
 
-      $scope.genderChart = genderChart
 
-    createAgeChart = (ageData)->
-      ageChart = {}
-      ageChart.type = 'PieChart'
-
-      ageChart.data = [
-        [
-         {type: 'string', label: 'Age'}
-         {type: 'number', label: 'Results'}
-         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
-        ]
-      ]
-
-      _.forEach ageData, (data) ->
-        ageChart.data.push([
-          data['age_with_data']
-          data['results']
-          {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + data['age'] + "</strong></span><br><br>" +
-                "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#616161;'>" + numberFilter(data['results']) + "<br></span></p>" +
-              "</div>", p: {}
-          }
-        ])
-
-      ageChart.options =
-        legend: 'none',
-        pieSliceText: 'label',
-        titleTextStyle: {color: '#797575' }
-        displayExactValues: true
-        tooltip: {isHtml: true}
-        animation: { startup: true, duration: 1000, easing: 'in' }
-        legend: { position: 'none'}
-        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
-        vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '100%', height: '100%'}
-        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#80CBC4', '#4DB6AC', '#26A69A', '#009688', '#00897B', '#00796B']
-
-      $scope.ageChart = ageChart
+      $scope.ageGenderChart = ageGenderChart
 
     createGeneralChart = (generalData)->
       generalChart = {}
