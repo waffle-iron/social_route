@@ -1,14 +1,12 @@
-<% provide(:title, "Reporting: #{@account.name}") %>
-
-<center>
-  <h2>
-    <%= @account.name %>
-    <br>
-    Reporting
-  </h2>
-</center>
 
 <div ng-controller='ReportingCtrl'>
+
+  <a class="waves-effect waves-light btn right orange darken-1"
+     ng-click="generateReport('act_1219093434772270')">
+    Generate PDF
+  </a>
+  <br><br>
+
   <div class="row">
     <div class='col m3'>
       <div class="card white darken-1">
@@ -92,7 +90,6 @@
       </div>
     </div>
   </div>
-
   <div class="row">
     <div class="col s12 m12">
       <div class="card white darken-1">
@@ -122,21 +119,79 @@
           <span class="card-title">Demographics: {{reporting.date_range}}</span>
           <br><br>
           <div google-chart chart='ageGenderChart' style='height: 400px;'></div>
-          <div class="row">
-            <div class="col s12 m6">
-              <center><h5>Gender</h5></center>
-              <div google-chart chart='genderChart' style='height: 400px;'></div>
-            </div>
-            <div class="col s12 m6">
-              <center><h5>Age</h5></center>
-              <div google-chart chart='ageChart' style='height: 400px;'></div>
-            </div>
-          </div>
           <br><br>
           <center><h5>Audience</h5></center>
           <div google-chart chart='generalChart' style='height: 400px;'></div>
           <br>
           <div google-chart chart='generalChartCPM' style='height: 400px;'></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">Ad Formats: {{reporting.date_range}}</span>
+          <br><br>
+           <div google-chart chart="adFormatChart" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">Ad Creative: {{reporting.date_range}}</span>
+          <br><br>
+           <div google-chart chart="adDataChart" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card white darken-1">
+        <div class="card-content grey-text text-darken-1">
+          <span class="card-title">Audience Targeting: {{reporting.date_range}}</span>
+          <br><br>
+          <table class="bordered responsive-table highlight centered">
+            <thead>
+              <tr>
+                <th ng-repeat="data in targeting | orderBy: 'name'">
+                  {{data.name}}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td ng-repeat="data in targeting | orderBy: 'name'" class='center-align'>
+                  People Ages: {{data.min_age}}-{{data.max_age}}<span ng-if='data.max_age >=65'>+</span>
+                <td>
+              </tr>
+              <tr>
+                <td ng-repeat="data in targeting | orderBy: 'audience'" class='center-align'>
+                  <span ng-if='data.interests.length > 0'>
+                    <b>Interests</b>
+                    <p ng-repeat="interest in data.interests">
+                      {{interest}}
+                    </p>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td ng-repeat="data in targeting | orderBy: 'audience'" class='center-align'>
+                  <span ng-if='data.cities.length > 0'>
+                    <b>Geolocations</b>
+                    <p ng-repeat="city in data.cities">
+                      {{city.name}} + {{city.radius}} mi
+                    </p>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

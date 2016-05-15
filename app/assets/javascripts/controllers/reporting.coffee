@@ -2,10 +2,17 @@
   '$scope'
   'Reporting'
   '$filter'
+  '$window'
 
-  @DashboardCtrl = ($scope, Reporting, $filter) ->
+  @DashboardCtrl = ($scope, Reporting, $filter, $window) ->
     numberFilter = $filter('number')
     currencyFilter = $filter('currency')
+
+
+    $scope.generateReport = (account_id)=>
+        $window.open('/reporting.pdf?account_id=' + account_id
+                     , '_blank')
+
 
     getParameterByName = (name) ->
       url = window.location.href
@@ -32,12 +39,40 @@
         else
           objectiveData.objectiveName = objectiveData.objective
 
+      $scope.targeting = []
+
+      _.forEach reportingData.targeting, (targetingData) ->
+        interests = []
+        cities = []
+
+        if targetingData.geolocations
+          _.forEach targetingData.geolocations, (data) ->
+            if data.cities
+              _.forEach data.cities, (item) ->
+                cities.push(name: item.name, radius: item.radius)
+
+        _.forEach targetingData.geolocations.flexible_spec, (data) ->
+          if data.interests
+            _.forEach data.interests, (item) ->
+              interests.push(item.name)
+
+        $scope.targeting.push({
+          name:      targetingData.name
+          min_age:   targetingData.min_age
+          max_age:   targetingData.max_age
+          audiences: targetingData.audience
+          interests: _.sortBy(interests)
+          cities:    _.sortBy(cities)
+        })
+
       $scope.reporting = reportingData
       createCpmChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
       createAgeGenderChart(reportingData.demographics.age_and_gender)
       createGeneralChart(reportingData.demographics.audience_breakdowns)
       createGeneralChartCPM(reportingData.demographics.audience_breakdowns)
+      createAdFormatChart(reportingData.ad_formats)
+      createAdChart(reportingData.ad_data)
 
     createCpmChart = (cpmData) ->
       cpmChart = {}
@@ -271,7 +306,7 @@
          gridlineColor: '#fff',
          textPosition: 'none'
        }
-        chartArea: {width: '100%', height: '90%'}
+        chartArea: {width: '95%', height: '90%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
         colors: ['#304FFE', '#F50057']
 
@@ -368,5 +403,89 @@
         colors: ['#00838F']
 
       $scope.generalChartCPM = generalChartCPM
+
+    createAdFormatChart = (adFormatData)->
+      adFormatChart = {}
+      adFormatChart.type = 'ColumnChart'
+      adFormatChart.data = [
+        [
+         {type: 'string', label: 'Ad Format'}
+         {type: 'number', label: 'CPM'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+        ]
+      ]
+
+      _.forEach adFormatData, (data) ->
+        adFormatChart.data.push([
+          data.format
+          data.cpm
+          currencyFilter(data.cpm) + ' CPM'
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.format + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['cpm']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+        ])
+
+      adFormatChart.options =
+        title: 'CPM by Ad Format'
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
+        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#00838F']
+
+      $scope.adFormatChart = adFormatChart
+
+    createAdChart = (adData)->
+      adDataChart = {}
+      adDataChart.type = 'ColumnChart'
+      adDataChart.data = [
+        [
+         {type: 'string', label: 'Creative'}
+         {type: 'number', label: 'CPM'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+        ]
+      ]
+
+      _.forEach adData, (data) ->
+        adDataChart.data.push([
+          data.simple_name
+          data.cpm
+          currencyFilter(data.cpm) + ' CPM'
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.simple_name + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['cpm']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+        ])
+
+      adDataChart.options =
+        title: 'CPM by Creative'
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
+        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#00838F']
+
+      $scope.adDataChart = adDataChart
 
 ]

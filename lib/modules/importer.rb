@@ -10,19 +10,19 @@ module Importer
     puts "| Generate Account Data                                            |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Account Data                                            |".colorize(:green)
-    build_accounts
+    # build_accounts
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    build_account_insights
+    # build_account_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Campaign Data                                           |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Campaign Data                                           |".colorize(:green)
-    build_campaigns
+    # build_campaigns
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Campaign Insight Data                                   |".colorize(:green)
-    build_campaigns_insights
+    # build_campaigns_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Set Data                                             |".colorize(:green)
@@ -31,13 +31,13 @@ module Importer
     build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    build_adset_insights
+    # build_adset_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Data                                                 |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ads Data                                                |".colorize(:green)
-    build_ads
+    # build_ads
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------"
     puts "\nImport sucessfull \n\n".colorize(:yellow)
@@ -237,32 +237,46 @@ module Importer
     Adset.delete_all
 
     adset_columns = ['name','adset_id','account_id','campaign_id','status',
-                     'daily_budget']
+                     'daily_budget', 'targeting']
 
     account_ids.each do |account_id|
       http_response = RestClient.get "#{BASE_URL}/#{account_id}/adsets",
                                       {:params => {'access_token' => ACCESS_TOKEN,
                                                    'fields' => adset_columns,
                                                    'limit' => 1000,
-                                                   'date_preset' => 'lifetime'}}
+                                                   'date_preset' => 'lifetime',
+                                                   'format' => 'json'}}
 
       raw_data = JSON.parse(http_response)['data']
 
       raw_data.each do |adset|
         Adset.create(
           name:         adset['name'],
-          adset_id:     adset['id'],
+          adset_id:     adset['adset_id'],
           account_id:   adset['account_id'],
           campaign_id:  adset['campaign_id'],
           status:       adset['status'],
           daily_budget: adset['daily_budget'],
-          audience:     adset['name'].split('|')[3].strip
+          audience:     adset['name'].split('|')[3].strip,
+          targeting:    adset['targeting']
         )
+
+        unless adset['targeting'].nil?
+          AdsetTargeting.create(
+            age_min: adset['targeting']['age_min'],
+            age_max: adset['targeting']['age_max'],
+            account_id: adset['account_id'],
+            campaign_id: adset['campaign_id'],
+            adset_id: adset['adset_insight'],
+            audience: adset['name'].split('|')[3].strip
+          )
+        end
       end
     end
 
     # Output Adset Data
     puts "Adsets Created: #{Adset.count}"
+    puts "Adsets Tagets Created: #{AdsetTargeting.count}"
   end
 
   def self.build_adset_insights
@@ -347,6 +361,7 @@ module Importer
             ad_id:         ad['ad_id'],
             adset_id:      ad['adset_id'],
             ad_name:       ad['ad_name'],
+            simple_name:   ad['ad_name'].split('|')[0].strip,
             campaign_id:   ad['campaign_id'],
             campaign_name: ad['campaign_name'],
             objective:     ad['objective'],
@@ -355,7 +370,9 @@ module Importer
             frequency:     ad['frequency'],
             reach:         ad['reach'],
             placement:     ad['placement'],
-            audience:      ad['campaign_name'].split('|')[1].strip
+            audience:      ad['campaign_name'].split('|')[1].strip,
+            format:        ad['ad_name'].split('|')[3].strip,
+            edition:       ad['ad_name'].split('|')[4].strip
           )
 
           unless ad['actions'].nil? || ad['actions'].blank?

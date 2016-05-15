@@ -17,6 +17,11 @@ gem 'rest-client'
 gem 'rails-angular-material'
 gem 'toastr-rails'
 gem 'colorize'
+gem 'wicked_pdf'
+gem 'wkhtmltopdf-binary-edge'
+gem 'prawn'
+gem 'prawn-table'
+gem 'squid'
 
 group :development do
   gem 'web-console', '~> 2.0'
