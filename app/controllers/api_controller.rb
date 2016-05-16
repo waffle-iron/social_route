@@ -301,7 +301,9 @@ class ApiController < ApplicationController
                         cpm_by_audience_and_objective_pdf,
                         results_by_age_and_gender_pdf,
                         results_by_audience_pdf,
-                        cpm_by_audience_pdf)
+                        cpm_by_audience_pdf,
+                        cpm_by_ad_format_pdf,
+                        cpm_by_ad_creative_pdf)
 
     send_data pdf.render, filename: "#{@account.name}.pdf",
                           type: "application/pdf",
@@ -344,15 +346,17 @@ class ApiController < ApplicationController
     campaign_objectives_overview = [['Campaign Objective', 'Results', 'CPR', 'Reach', 'Impressions', 'CPM']]
 
     overview_stats.each do |objective_data|
-      cpr = number_to_currency(objective_data[:spend]/objective_data[:results].to_f)
-      cpm = number_to_currency(objective_data[:spend]/(objective_data[:impressions].to_f/1000))
+      if objective_data[:results] > 0
+        cpr = number_to_currency(objective_data[:spend]/objective_data[:results].to_f)
+        cpm = number_to_currency(objective_data[:spend]/(objective_data[:impressions].to_f/1000))
 
-      campaign_objectives_overview.push([objective_name(objective_data[:objective]),
-                                        number_with_delimiter(objective_data[:results].round(0), delimiter: ','),
-                                        cpr,
-                                        number_with_delimiter(objective_data[:reach].round(0), delimiter: ','),
-                                        number_with_delimiter(objective_data[:impressions].to_f.round(0), delimiter: ','),
-                                        cpm])
+        campaign_objectives_overview.push([objective_name(objective_data[:objective]),
+                                          number_with_delimiter(objective_data[:results].round(0), delimiter: ','),
+                                          cpr,
+                                          number_with_delimiter(objective_data[:reach].round(0), delimiter: ','),
+                                          number_with_delimiter(objective_data[:impressions].to_f.round(0), delimiter: ','),
+                                          cpm])
+      end
     end
 
     return campaign_objectives_overview
@@ -401,6 +405,14 @@ class ApiController < ApplicationController
 
   def cpm_by_audience_pdf
     return audience_demographics.map { |data| [data[:audience], data[:cpm]]}.to_h
+  end
+
+  def cpm_by_ad_format_pdf
+    return ad_formats.map { |data| [data[:format], data[:cpm]]}.to_h
+  end
+
+  def cpm_by_ad_creative_pdf
+    return ad_data.map { |data| [data[:simple_name], data[:cpm]]}.to_h
   end
 
   private

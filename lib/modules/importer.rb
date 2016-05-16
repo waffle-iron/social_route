@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAKuXwyMwfrcVG5rZBzfwFBdZCpEwxMwwqCZCwDDVXoLDxyXgR9BhfAHoPF2t6bIWpjq4b2zD46tfqrXfqKs079roEvl36oLRZCCELPGmpcq5X5K0i6oUlH4ktjMOKZBRFMMmojHANgxxPdzD1ZCT8ZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAAAHQtb5g0ZAyhblDvXK1YfAug8aIr4szHy0FTYuQBPJgAdLPBJ7cPGxEMLEAooKDrfPjzWLJ9S0DbzSEtklug3BA5hfyCj7Vubybujwc88qSOm6tcZCGcEKZC4TzA46IforXygPEG2anZAgwptO2hqkxCZChZBgZDZD'
 
   def self.import
     puts "Start Import Rake Task... \n".colorize(:yellow)
@@ -28,10 +28,10 @@ module Importer
     puts "| Generate Ad Set Data                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ad Set Data                                             |".colorize(:green)
-    build_adsets
+    # build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    # build_adset_insights
+    build_adset_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Data                                                 |".colorize(:green)
@@ -310,20 +310,20 @@ module Importer
             audience:     adset_insight['adset_name'].split('|')[3].strip
           )
 
-          adset_insight['actions'].each do |action|
-            unless adset_insight['actions'].nil?
-              AdsetAction.create(
-                action_type: action['action_type'],
-                value: action['value'],
-                account_id: adset_insight['account_id'],
-                campaign_id: adset_insight['campaign_id'],
-                adset_id: adset_insight['adset_insight'],
-                adset_name: adset_insight['adset_name'],
-                objective: adset_insight['objective'],
-                audience: adset_insight['adset_name'].split('|')[3].strip
-              )
-            end
-          end
+          # adset_insight['actions'].each do |action|
+          #   unless adset_insight['actions'].nil?
+          #     AdsetAction.create(
+          #       action_type: action['action_type'],
+          #       value: action['value'],
+          #       account_id: adset_insight['account_id'],
+          #       campaign_id: adset_insight['campaign_id'],
+          #       adset_id: adset_insight['adset_insight'],
+          #       adset_name: adset_insight['adset_name'],
+          #       objective: adset_insight['objective'],
+          #       audience: adset_insight['adset_name'].split('|')[3].strip
+          #     )
+          #   end
+          # end
         end
       end
     end
