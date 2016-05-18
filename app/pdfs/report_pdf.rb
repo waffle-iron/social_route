@@ -5,6 +5,7 @@ class ReportPdf < Prawn::Document
                  dates,
                  campaign_overview,
                  campaign_objectives_overview,
+                 audiences,
                  cpm_by_placement,
                  cpm_by_audience_and_objective,
                  results_by_age_and_gender,
@@ -17,8 +18,11 @@ class ReportPdf < Prawn::Document
     @account_name = account_name
     @dates = dates
 
-    @kpis = campaign_overview
+    @campaign_overview = campaign_overview
     @campaign_objectives_overview = campaign_objectives_overview
+
+    @audiences = audiences
+
     @cpm_by_placement = cpm_by_placement
     @cpm_by_audience_and_objective = cpm_by_audience_and_objective
 
@@ -47,10 +51,11 @@ class ReportPdf < Prawn::Document
   def cover_page
     move_down(115)
     text @account_name, size: 70, :color => "1F1F1F",:align => :center
-    move_down(200)
+    move_down(180)
     text @dates, size: 20, :color => "767676",:align => :center
-    # social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
-    # image social_route_logo, :at => [250,50], :scale => 0.75
+    move_down(60)
+    social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
+    image social_route_logo, :position => :center, :scale => 0.80
   end
 
   def outline_page
@@ -90,20 +95,53 @@ class ReportPdf < Prawn::Document
     start_new_page(:size => "A4", :layout => :landscape)
     header
     page_title('Campaign Overview')
-
     stroke do
       stroke_color '56A8D8'
-      line_width 6
+      line_width 3
     end
 
-    offset = 0
+    bounding_box([60,425], :width => 650, :height => 175) do
+      define_grid(:columns => 3, :rows => 1, :gutter => 50)
+      counter = 0
 
-    @kpis.each do |kpi|
-      stroke_circle([80 + offset, 275], 65)
-      draw_text kpi[1], size: 20, :at => [(30 + offset), 275]
-      draw_text kpi[0], size: 15, :at => [(30 + offset), 250]
-      offset = offset + 200
+      @campaign_overview[0..2].each do |data|
+        grid(0, counter).bounding_box do
+          # text(data[1], :size => 20)
+          move_down(60)
+          text data[1], size: 30, :color => "767676",:align => :center
+          move_down(10)
+          text data[0], size: 20, :color => "767676",:align => :center
+          stroke_bounds
+        end
+
+        counter = counter + 1
+      end
     end
+
+    bounding_box([180,200], :width => 650, :height => 175) do
+      define_grid(:columns => 3, :rows => 1, :gutter => 50)
+      counter = 0
+
+      @campaign_overview[3..5].each do |data|
+        grid(0, counter).bounding_box do
+          # text(data[1], :size => 20)
+          move_down(30)
+          text data[1], size: 30, :color => "767676",:align => :center
+          move_down(10)
+          text data[0], size: 20, :color => "767676",:align => :center
+          stroke_bounds
+        end
+
+        counter = counter + 1
+      end
+    end
+
+      # @campaign_overview.each do |kpi|
+      #   stroke_circle([40 + offset, 275], 85)
+      #   draw_text kpi[1], size: 20, :at => [(30 + offset), 275]
+      #   draw_text kpi[0], size: 15, :at => [(30 + offset), 250]
+      #   offset = offset + 180
+      # end
 
     stroke do
       stroke_color '767676'
@@ -135,14 +173,9 @@ class ReportPdf < Prawn::Document
     header
     page_title('Audience Breakdown')
 
-    data = [['<b>Audience #1</b>', '<b>Audience #2</b>', '<b>Audience #3</b>']]
-    data.push(['People Aged 18-65+', 'People Aged 18-65+', 'People Aged 18-65+'])
-    data.push(['<b>Geolocations<br><br></b>Colorado Springs - 10 mi', '<b>Geolocations<br><br></b>Colorado Springs - 10 mi', '<b>Geolocations<br><br></b>Colorado Springs - 10 mi'])
-    data.push(['Audience Size: 160,000', 'Audience Size: 2,600,000', 'Audience Size: 850,000'])
-
-    table(data, row_colors: ['BBDEFB', '90CAF9'],
+    table(@audiences, row_colors: ['BBDEFB', '90CAF9'],
                 width: bounds.width,
-                cell_style: {size: 14, align: :center, border_color: 'FFFFFF', border_width: 3,  :inline_format => true}) do
+                cell_style: {size: 11, align: :center, border_color: 'FFFFFF', border_width: 3,  :inline_format => true}) do
       column(0).style :background_color => '56A8D8'
       column(1).style :background_color => '90CAF9'
       column(2).style :background_color => 'BBDEFB'
@@ -234,15 +267,15 @@ class ReportPdf < Prawn::Document
   end
 
   def page_title(title)
-    move_down(30)
+    move_down(15)
     text title, size: 30, :color => "767676",:align => :center
-    text @dates, size: 20, :color => "767676",:align => :center
-    move_down(30)
+    # text @dates, size: 20, :color => "767676",:align => :center
+    move_down(15)
   end
 
   def footer(page_number)
-    # social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
-    # image social_route_logo, :at => [625,25], :scale => 0.50
+    social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
+    image social_route_logo, :at => [625,25], :scale => 0.50
     draw_text page_number, size: 10, :at => [40,15]
   end
 

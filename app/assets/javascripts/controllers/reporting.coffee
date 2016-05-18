@@ -10,7 +10,7 @@
 
 
     $scope.generateReport = (account_id)=>
-        $window.open('/reporting.pdf?account_id=' + account_id
+        $window.open('/api/reporting.pdf?account_id=' + account_id
                      , '_blank')
 
 

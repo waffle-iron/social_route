@@ -2,7 +2,7 @@
 <html>
   <head>
     <title><%= full_title(yield(:title)) %></title>
-    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
     <%= csrf_meta_tags %>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
@@ -11,20 +11,25 @@
   </head>
   <body>
     <div class="page-flexbox-wrapper">
-      <% unless current_user %>
-        <header>
-          <nav class="light-blue lighten-1" role="navigation">
-            <div class="nav-wrapper container"><a id="logo-container" href="/dashboard" class="brand-logo">The Social Route</a>
-              <ul class="right hide-on-med-and-down">
+      <header>
+        <nav class="light-blue lighten-1" role="navigation">
+          <div class="nav-wrapper container"><a id="logo-container" href="/dashboard" class="brand-logo">The Social Route</a>
+            <ul class="right hide-on-med-and-down">
+              <% if signed_in? %>
                 <li><a href="/dashboard"><i class="material-icons">dashboard</i></a></li>
-                <li><a href="/users/edit"><i class="material-icons">person</i></a></li>
-                <li><%= link_to('Logout', destroy_user_session_path, :method => :delete) %></li>
-              </ul>
-              <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
-            </div>
-          </nav>
-        </header>
-      <% end %>
+              <% end %>
+
+              <% if signed_in? %>
+                <li><%= link_to 'SIGN OUT', sign_out_path, method: :delete %></li>
+              <% else %>
+                <li><%= link_to 'SIGN IN', sign_in_path %></li>
+              <% end %>
+
+            </ul>
+            <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+          </div>
+        </nav>
+      </header>
       <main>
         <div ng-app='thesocialroute' class='container' ng-cloak>
           <%= custom_bootstrap_flash %>

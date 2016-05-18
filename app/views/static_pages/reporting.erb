@@ -1,12 +1,19 @@
+<% provide(:title, "Reporting: #{@account.name}") %>
+
+<center>
+  <h2>
+    <%= @account.name %>
+    <br>
+    Reporting
+  </h2>
+</center>
 
 <div ng-controller='ReportingCtrl'>
-
   <a class="waves-effect waves-light btn right orange darken-1"
      ng-click="generateReport('act_1219093434772270')">
     Generate PDF
   </a>
-  <br><br>
-
+  <br><br><br>
   <div class="row">
     <div class='col m3'>
       <div class="card white darken-1">

@@ -1,11 +1,19 @@
 Rails.application.routes.draw do
-  devise_for :users, :controllers => { :registrations => :registrations }
+  root 'static_pages#dashboard'
 
-  resources :users
+  resources :passwords, controller: "clearance/passwords", only: [:create, :new]
+  resource :session, controller: "clearance/sessions", only: [:create]
 
-  devise_scope :user do
-    root to: "devise/sessions#new"
+  resources :users, controller: "clearance/users", only: [:create] do
+    resource :password,
+      controller: "clearance/passwords",
+      only: [:create, :edit, :update]
   end
+
+  get "/sign_in" => "clearance/sessions#new", as: "sign_in"
+  delete "/sign_out" => "clearance/sessions#destroy", as: "sign_out"
+  get "/sign_up" => "clearance/users#new", as: "sign_up"
+  resources :users
 
   match '/dashboard', to: 'static_pages#dashboard', via: 'get'
   match '/overview', to: 'static_pages#overview', via: 'get'

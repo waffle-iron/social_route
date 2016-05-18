@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAAAHQtb5g0ZAyhblDvXK1YfAug8aIr4szHy0FTYuQBPJgAdLPBJ7cPGxEMLEAooKDrfPjzWLJ9S0DbzSEtklug3BA5hfyCj7Vubybujwc88qSOm6tcZCGcEKZC4TzA46IforXygPEG2anZAgwptO2hqkxCZChZBgZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAAL2BN5pRllBZA9cZBrSjlk6jHBcwqfscJZAzjoXOJbKFHu2WkzeWg8hsYUibnC6NP5vq3RYvRDEF0hxZC3VEX6MOw83KE3m5h2ZAmbVuPHrZBk88bJTxAL3OTUsCFN4bTUZC1T81uGYswafQWuZBZAVZAaK83RAIHCwZDZD'
 
   def self.import
     puts "Start Import Rake Task... \n".colorize(:yellow)
@@ -28,10 +28,10 @@ module Importer
     puts "| Generate Ad Set Data                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ad Set Data                                             |".colorize(:green)
-    # build_adsets
+    build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    build_adset_insights
+    # build_adset_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Data                                                 |".colorize(:green)
@@ -239,7 +239,7 @@ module Importer
     adset_columns = ['name','adset_id','account_id','campaign_id','status',
                      'daily_budget', 'targeting']
 
-    account_ids.each do |account_id|
+    ['act_1219093434772270'].each do |account_id|
       http_response = RestClient.get "#{BASE_URL}/#{account_id}/adsets",
                                       {:params => {'access_token' => ACCESS_TOKEN,
                                                    'fields' => adset_columns,
@@ -250,6 +250,9 @@ module Importer
       raw_data = JSON.parse(http_response)['data']
 
       raw_data.each do |adset|
+        interests = []
+        cities = []
+
         Adset.create(
           name:         adset['name'],
           adset_id:     adset['adset_id'],
@@ -261,16 +264,38 @@ module Importer
           targeting:    adset['targeting']
         )
 
-        unless adset['targeting'].nil?
-          AdsetTargeting.create(
-            age_min: adset['targeting']['age_min'],
-            age_max: adset['targeting']['age_max'],
-            account_id: adset['account_id'],
-            campaign_id: adset['campaign_id'],
-            adset_id: adset['adset_insight'],
-            audience: adset['name'].split('|')[3].strip
-          )
+        if adset['targeting']
+          if adset['targeting']['flexible_spec']
+            adset['targeting']['flexible_spec'].each do |data|
+              if data['interests']
+                data['interests'].each do |interest|
+                  interests.push(interest['name'])
+                end
+              end
+            end
+          end
         end
+
+        if adset['targeting']
+          if adset['targeting']['geo_locations']
+            if adset['targeting']['geo_locations']['cities']
+              adset['targeting']['geo_locations']['cities'].each do |data|
+                cities.push("#{data['name']} - #{data['radius']} mi")
+              end
+            end
+          end
+        end
+
+        AdsetTargeting.create(
+          age_min: adset['targeting']['age_min'],
+          age_max: adset['targeting']['age_max'],
+          account_id: adset['account_id'],
+          campaign_id: adset['campaign_id'],
+          adset_id: adset['adset_id'],
+          audience: adset['name'].split('|')[3].strip,
+          interests: interests,
+          cities: cities
+        )
       end
     end
 

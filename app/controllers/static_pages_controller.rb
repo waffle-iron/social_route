@@ -1,15 +1,7 @@
 class StaticPagesController < ApplicationController
-
+  before_action :require_login
+  
   def dashboard
-    respond_to do |format|
-      format.html
-      format.pdf do
-        pdf = ReportPdf.new('act_1219093434772270', params['cpm_by_placement'])
-        send_data pdf.render, filename: "test.pdf",
-                              type: "application/pdf",
-                              disposition: "inline"
-      end
-    end
   end
 
   def overview

@@ -1,12 +1,16 @@
+class Array
+  def pluck(key)
+    map { |h| h[key] }
+  end
+end
+
 class ApiController < ApplicationController
   include ActionView::Helpers::NumberHelper
   before_action :set_account_params
+  before_action :require_login
 
   def dashboard
     render json: Account.where(account_id: ['act_1219094488105498','act_1219094361438844','act_1219093704772243','act_1219093848105562','act_1219093434772270'])
-    require "prawn"
-
-
   end
 
   def overview
@@ -18,6 +22,8 @@ class ApiController < ApplicationController
   end
 
   def reporting
+    @dates = "#{Date.parse(Action.where(account_id: @account_id).order('date').first.date).strftime("%B %e, %Y")} - #{Date.parse(Action.where(account_id: @account_id).order('date').last.date).strftime("%b %e, %Y")}"
+
     respond_to do |format|
       format.json do
         impressions = Ad.where(account_id: @account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
@@ -292,11 +298,11 @@ class ApiController < ApplicationController
     @account = Account.find_by_account_id(params['account_id'])
     @dates = "#{Date.parse(Action.where(account_id: @account_id).order('date').first.date).strftime("%B %e, %Y")} - #{Date.parse(Action.where(account_id: @account_id).order('date').last.date).strftime("%b %e, %Y")}"
 
-
     pdf = ReportPdf.new(@account.name,
                         @dates,
                         campaign_overview_pdf,
                         campaign_objectives_overview_pdf,
+                        audience_pdf,
                         cpm_by_placement_pdf,
                         cpm_by_audience_and_objective_pdf,
                         results_by_age_and_gender_pdf,
@@ -360,6 +366,58 @@ class ApiController < ApplicationController
     end
 
     return campaign_objectives_overview
+  end
+
+  def audience_pdf
+    audiences = Adset.where(account_id: @account_id_number).order(audience: :desc).pluck('audience').uniq
+
+    audience_data = Array.new
+    audience_names = Array.new
+    audience_ages = Array.new
+    audience_intersts = Array.new
+    audience_cities = Array.new
+    audience_sizes = Array.new
+
+    counter = 1
+
+    # Build Audience Names
+    audiences.length.times do
+      audience_names.push("<b>Audience ##{counter}</b>")
+      counter = counter + 1
+    end
+
+    audiences.each do |audience|
+      data = AdsetTargeting.where(account_id: @account_id_number, audience: audience).last
+
+      age_min = data.age_min
+      age_max = data.age_max
+
+      if age_max >= '65'
+        extra = '+'
+      else
+        extra = ''
+      end
+
+      audience_ages.push("People Aged #{age_min}-#{age_max}#{extra}")
+
+      if data.interests.length > 0
+        audience_intersts.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
+      else
+        audience_intersts.push('')
+      end
+
+      if data.cities.length > 0
+        audience_cities.push('<b>Geolocations</b><br><br>'.concat(data.cities.join("<br>")))
+      else
+        audience_cities.push('')
+      end
+
+      audience_sizes.push("Audience Size: #{audience}")
+    end
+
+    audience_data.push(audience_names, audience_ages, audience_intersts, audience_cities, audience_sizes)
+
+    return audience_data
   end
 
   def cpm_by_placement_pdf
