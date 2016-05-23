@@ -24,6 +24,25 @@
         return ''
       decodeURIComponent results[2].replace(/\+/g, ' ')
 
+    calculateAccountCols = ->
+      total = 0
+
+      if $scope.reporting.account_stats.impressions > 0
+        total = total + 1
+      if $scope.reporting.account_stats.website_clicks > 0
+        total = total + 1
+      if $scope.reporting.account_stats.website_conversions > 0
+        total = total + 1
+      if $scope.reporting.account_stats.post_engagement > 0
+        total = total + 1
+      if $scope.reporting.account_stats.video_views > 0
+        total = total + 1
+
+      if total is 4
+        $scope.standardCols = true
+      else
+        $scope.standardCols = false
+
     Reporting.index(account_id: getParameterByName('account_id')).$promise
     .then (reportingData) ->
       _.forEach reportingData.overview, (objectiveData) ->
@@ -65,6 +84,9 @@
         })
 
       $scope.reporting = reportingData
+
+      calculateAccountCols()
+
       createCpmChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
       createAgeGenderChart(reportingData.demographics.age_and_gender)

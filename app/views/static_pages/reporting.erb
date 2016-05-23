@@ -15,7 +15,7 @@
   </a>
   <br><br><br>
   <div class='row'>
-    <div class='col m3'>
+    <div class='col m3' ng-if='reporting.account_stats.impressions > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
           <h4 class='center-align' style='color: #3F6FCF;'>
@@ -25,7 +25,7 @@
         </div>
       </div>
     </div>
-    <div class='col m2'>
+    <div class='col m3' ng-if='reporting.account_stats.website_clicks > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
           <h4 class='center-align' style='color: #DC3912'>
@@ -35,7 +35,7 @@
         </div>
       </div>
     </div>
-    <div class='col m2'>
+    <div class='col m3' ng-if='reporting.account_stats.website_conversions > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
           <h4 class='center-align' style='color: #8E24AA'>
@@ -45,7 +45,7 @@
         </div>
       </div>
     </div>
-    <div class='col m2'>
+    <div class='col m3' ng-if='reporting.account_stats.post_engagement > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
           <h4 class='center-align' style='color: #109618'>
@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    <div class='col m3'>
+    <div class='col m3' ng-if='reporting.account_stats.video_views > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
           <h4 class='center-align' style='color: #FF9900'>
