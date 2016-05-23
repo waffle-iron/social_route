@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160523152930) do
+ActiveRecord::Schema.define(version: 20160523163445) do
 
   create_table "account_insights", force: :cascade do |t|
     t.string   "account_id"
@@ -66,7 +66,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.string   "campaign_id"
     t.string   "campaign_name"
     t.string   "objective"
-    t.string   "audience"
+    t.integer  "audience"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
     t.string   "placement"
@@ -91,7 +91,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.datetime "updated_at",    null: false
     t.string   "placement"
     t.string   "campaign_name"
-    t.string   "audience"
+    t.integer  "audience"
     t.string   "format"
     t.string   "edition"
     t.string   "simple_name"
@@ -105,7 +105,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.string   "adset_id"
     t.string   "adset_name"
     t.string   "objective"
-    t.string   "audience"
+    t.integer  "audience"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
   end
@@ -118,7 +118,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.string   "account_id"
     t.string   "campaign_id"
     t.string   "objective"
-    t.string   "audience"
+    t.integer  "audience"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
     t.string   "impressions"
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.string   "account_id"
     t.string   "campaign_id"
     t.string   "adset_id"
-    t.string   "audience"
+    t.integer  "audience"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
     t.string   "targeting"
@@ -147,7 +147,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.float    "daily_budget"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
-    t.string   "audience"
+    t.integer  "audience"
     t.string   "targeting"
     t.string   "objective"
   end
@@ -161,7 +161,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.string   "campaign_id"
     t.string   "objective"
     t.string   "campaign_name"
-    t.string   "audience"
+    t.integer  "audience"
     t.float    "spend"
     t.string   "impressions"
   end
@@ -187,7 +187,7 @@ ActiveRecord::Schema.define(version: 20160523152930) do
     t.datetime "updated_at",     null: false
     t.string   "objective"
     t.string   "campaign_name"
-    t.string   "audience"
+    t.integer  "audience"
     t.float    "spend"
     t.string   "impressions"
   end

@@ -147,7 +147,7 @@ class ApiController < ApplicationController
 
   def audience_demographics
     audience_demographics = Array.new
-    audiences = CampaignAction.where(account_id: @account_id_number).pluck('audience').uniq
+    audiences = CampaignAction.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
     columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
     total_results = CampaignAction.where(account_id: @account_id_number, action_type: columns).sum(:value)
     cleaned_audiences = Array.new
@@ -173,9 +173,6 @@ class ApiController < ApplicationController
   end
 
   def campaign_data
-    puts 'PARAMS'.colorize(:green)
-    puts params[:account_id]
-
     raw_data = Array.new
     objectives = Campaign.where(account_id:@account_id_number).pluck('objective').uniq
 
@@ -269,16 +266,28 @@ class ApiController < ApplicationController
 
   def targeting
     target_data = Array.new
+    audiences = AdsetTargeting.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
 
-    audiences = Adset.where(account_id: @account_id_number).pluck('audience').uniq
     audiences.each do |audience|
       ad_target = AdsetTargeting.where(audience: audience, account_id:  @account_id_number).last
+      audience_formatted = number_with_delimiter(audience, delimiter: ',').to_s
 
-      target_data.push(name: "Audience: #{audience}",
-                       audience: audience,
-                       min_age: ad_target.age_min,
-                       max_age: ad_target.age_max,
-                       geolocations: Adset.where(audience: audience, account_id: @account_id_number).last.targeting)
+      if ad_target
+
+        if ad_target.age_min != nil && ad_target.age_max != nil
+          age_min = ad_target.age_min
+          age_max = ad_target.age_max
+        else
+          age_min = nil
+          age_max = nil
+        end
+
+        target_data.push(name: "Audience: #{audience_formatted}",
+                         min_age: age_min,
+                         max_age: age_max,
+                         cities: ad_target.cities,
+                         interests: ad_target.interests)
+      end
     end
 
     return target_data
@@ -359,7 +368,7 @@ class ApiController < ApplicationController
   end
 
   def audience_pdf
-    audiences = Adset.where(account_id: @account_id_number).order(audience: :desc).pluck('audience').uniq
+    audiences = Adset.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
 
     audience_data = Array.new
     audience_names = Array.new
@@ -416,7 +425,7 @@ class ApiController < ApplicationController
 
   def cpm_by_audience_and_objective_pdf
     cpm_by_audience_and_objective = Hash.new
-    audiences = Campaign.where(account_id: @account_id_number).pluck('audience').uniq
+    audiences = Campaign.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
 
     audiences.each do |audience|
       cpm_by_audience_and_objective.merge!({"#{audience} Audience".to_s.to_sym =>

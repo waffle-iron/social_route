@@ -23,13 +23,13 @@ module Importer
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Campaign Insight Data                                   |".colorize(:green)
     # build_campaigns_insights
-    build_campaign_insights_two
+    # build_campaign_insights_two
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Set Data                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ad Set Data                                             |".colorize(:green)
-    # build_adsets
+    build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
     # build_adset_insights

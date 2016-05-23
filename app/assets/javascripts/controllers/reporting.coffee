@@ -38,35 +38,7 @@
         else
           objectiveData.objectiveName = objectiveData.objective
 
-      $scope.targeting = []
-
-      _.forEach reportingData.targeting, (targetingData) ->
-        interests = []
-        cities = []
-
-        if targetingData.geolocations
-          _.forEach targetingData.geolocations, (data) ->
-            if data.cities
-              _.forEach data.cities, (item) ->
-                cities.push(name: item.name, radius: item.radius)
-
-        _.forEach targetingData.geolocations.flexible_spec, (data) ->
-          if data.interests
-            _.forEach data.interests, (item) ->
-              interests.push(item.name)
-
-        $scope.targeting.push({
-          name:      targetingData.name
-          min_age:   targetingData.min_age
-          max_age:   targetingData.max_age
-          audiences: targetingData.audience
-          interests: _.sortBy(interests)
-          cities:    _.sortBy(cities)
-        })
-
       $scope.reporting = reportingData
-
-
 
       createCpmChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
@@ -92,7 +64,7 @@
           n.placement
           {v: "<div style='width: 220px; padding: 20px;'>" +
               "<strong style='color: #424242'><p style='font-size: 200%'>" + n.placement + "</p></strong></span><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM<br><span style='font-size: 200%; color:#29B6F6;'>" + currencyFilter(n.cpm) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM<br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(n.cpm) + "<br></span></p>" +
               "</div>", p: {}
           }
           n.cpm
@@ -197,8 +169,8 @@
           n.age
           {v: "<div style='width: 220px; padding: 20px;'>" +
               "<strong style='color: #424242'><p style='font-size: 200%'>Age: " + n.age + "</p></strong></span><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#304FFE;'>" + numberFilter(n.male_results, 2) + '%' + "<br></span></p>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#F50057;'>" + numberFilter(n.female_results, 2) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#044462;'>" + numberFilter(n.male_results, 2) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#0888C4;'>" + numberFilter(n.female_results, 2) + '%' + "<br></span></p>" +
               "</div>", p: {}
           }
           numberFilter(n.male_results, 2)
@@ -225,7 +197,7 @@
        }
         chartArea: {width: '95%', height: '90%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#0888C4', '#044462']
+        colors: ['#044462', '#0888C4']
 
 
       $scope.ageGenderChart = ageGenderChart
@@ -252,8 +224,8 @@
           data.results
           percentage
           {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['results']) + "<br></span></p>" +
+              "<strong style='color: #424242'>" + numberFilter(data.audience,0) + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#0888C4;'>" + numberFilter(data['results']) + "<br></span></p>" +
               "</div>", p: {}
           }
         ])
@@ -298,8 +270,8 @@
           data.cpm
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['results']) + "<br></span></p>" +
+              "<strong style='color: #424242'>" + numberFilter(data.audience,0) + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpm']) + "<br></span></p>" +
               "</div>", p: {}
           }
         ])
@@ -341,7 +313,7 @@
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
               "<strong style='color: #424242'>" + data.format + "</strong></span><br><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['cpm']) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpm']) + "<br></span></p>" +
               "</div>", p: {}
           }
         ])
@@ -383,7 +355,7 @@
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
               "<strong style='color: #424242'>" + data.simple_name + "</strong></span><br><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#3366CC;'>" + numberFilter(data['cpm']) + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpm']) + "<br></span></p>" +
               "</div>", p: {}
           }
         ])

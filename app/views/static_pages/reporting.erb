@@ -167,19 +167,19 @@
           <table class='bordered responsive-table highlight centered'>
             <thead>
               <tr>
-                <th ng-repeat="data in targeting | orderBy: 'name'">
+                <th ng-repeat="data in reporting.targeting">
                   {{data.name}}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td ng-repeat="data in targeting | orderBy: 'name'" class='center-align'>
+                <td ng-repeat="data in reporting.targeting" class='center-align'>
                   People Ages: {{data.min_age}}-{{data.max_age}}<span ng-if='data.max_age >=65'>+</span>
                 <td>
               </tr>
               <tr>
-                <td ng-repeat="data in targeting | orderBy: 'audience'" class='center-align'>
+                <td ng-repeat="data in reporting.targeting" class='center-align'>
                   <span ng-if='data.interests.length > 0'>
                     <b>Interests</b>
                     <p ng-repeat="interest in data.interests">
@@ -189,11 +189,11 @@
                 </td>
               </tr>
               <tr>
-                <td ng-repeat="data in targeting | orderBy: 'audience'" class='center-align'>
+                <td ng-repeat="data in reporting.targeting" class='center-align'>
                   <span ng-if='data.cities.length > 0'>
                     <b>Geolocations</b>
                     <p ng-repeat="city in data.cities">
-                      {{city.name}} + {{city.radius}} mi
+                      {{city}}
                     </p>
                   </span>
                 </td>
