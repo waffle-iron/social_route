@@ -10,7 +10,7 @@
 
 
     $scope.generateReport = (account_id)=>
-        $window.open('/api/reporting.pdf?account_id=' + account_id
+        $window.open('/api/reporting.pdf?account_id=' + getParameterByName('account_id')
                      , '_blank')
 
     getParameterByName = (name) ->
@@ -56,6 +56,7 @@
          {type: 'string', label: 'Placement'}
          {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
          {type: 'number', label: 'CPM'}
+         {type: 'string', role: 'annotation'}
         ]
       ]
 
@@ -68,6 +69,7 @@
               "</div>", p: {}
           }
           n.cpm
+          currencyFilter(n.cpm)
         ])
 
       cpmChart.options =
@@ -76,6 +78,7 @@
         is3D: true
         tooltip: {isHtml: true}
         focusTarget: 'category'
+        displayAnnotations: true
         animation: { startup: true, duration: 1000, easing: 'in' }
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
@@ -169,14 +172,14 @@
           n.age
           {v: "<div style='width: 220px; padding: 20px;'>" +
               "<strong style='color: #424242'><p style='font-size: 200%'>Age: " + n.age + "</p></strong></span><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#044462;'>" + numberFilter(n.male_results, 2) + '%' + "<br></span></p>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#0888C4;'>" + numberFilter(n.female_results, 2) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#044462;'>" + numberFilter(n.male_results, 1) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#0888C4;'>" + numberFilter(n.female_results, 1) + '%' + "<br></span></p>" +
               "</div>", p: {}
           }
-          numberFilter(n.male_results, 2)
-          numberFilter(n.male_results, 2) + '%'
-          numberFilter(n.female_results, 2)
-          numberFilter(n.female_results, 2) + '%'
+          numberFilter(n.male_results, 1)
+          numberFilter(n.male_results, 1) + '%'
+          numberFilter(n.female_results, 1)
+          numberFilter(n.female_results, 1) + '%'
         ])
 
       ageGenderChart.options =
@@ -198,7 +201,6 @@
         chartArea: {width: '95%', height: '90%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
         colors: ['#044462', '#0888C4']
-
 
       $scope.ageGenderChart = ageGenderChart
 

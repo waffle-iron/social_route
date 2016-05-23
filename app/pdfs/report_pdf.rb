@@ -49,11 +49,11 @@ class ReportPdf < Prawn::Document
   end
 
   def cover_page
-    move_down(115)
+    move_down(70)
     text @account_name, size: 70, :color => "1F1F1F",:align => :center
-    move_down(180)
+    move_down(140)
     text @dates, size: 20, :color => "767676",:align => :center
-    move_down(60)
+    move_down(50)
     social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
     image social_route_logo, :position => :center, :scale => 0.80
   end
@@ -64,7 +64,6 @@ class ReportPdf < Prawn::Document
     move_down(40)
     text 'Outline', size: 35, :color => "767676",:align => :center, :style => :bold
     move_down(10)
-    draw_text '1', size: 10, :at => [40,15]
     bullet_item(1, "Campaign Overview")
     bullet_item(1, "Audience Breakdown")
     bullet_item(1, "Campaign Performance")
@@ -100,39 +99,56 @@ class ReportPdf < Prawn::Document
       line_width 3
     end
 
-    bounding_box([60,425], :width => 650, :height => 175) do
-      define_grid(:columns => 3, :rows => 1, :gutter => 50)
-      counter = 0
+    if @campaign_overview.count >= 5
+      bounding_box([60,425], :width => 650, :height => 175) do
+        define_grid(:columns => 3, :rows => 1, :gutter => 50)
+        counter = 0
 
-      @campaign_overview[0..2].each do |data|
-        grid(0, counter).bounding_box do
-          # text(data[1], :size => 20)
-          move_down(60)
-          text data[1], size: 30, :color => "767676",:align => :center
-          move_down(10)
-          text data[0], size: 20, :color => "767676",:align => :center
-          stroke_bounds
+        @campaign_overview[0..2].each do |data|
+          grid(0, counter).bounding_box do
+            move_down(40)
+            text data[1], size: 30, :color => "767676",:align => :center
+            move_down(10)
+            text data[0], size: 20, :color => "767676",:align => :center
+            stroke_bounds
+          end
+
+          counter = counter + 1
         end
-
-        counter = counter + 1
       end
-    end
 
-    bounding_box([180,200], :width => 650, :height => 175) do
-      define_grid(:columns => 3, :rows => 1, :gutter => 50)
-      counter = 0
+      bounding_box([180,200], :width => 650, :height => 175) do
+        define_grid(:columns => 3, :rows => 1, :gutter => 50)
+        counter = 0
 
-      @campaign_overview[3..5].each do |data|
-        grid(0, counter).bounding_box do
-          # text(data[1], :size => 20)
-          move_down(30)
-          text data[1], size: 30, :color => "767676",:align => :center
-          move_down(10)
-          text data[0], size: 20, :color => "767676",:align => :center
-          stroke_bounds
+        @campaign_overview[3..5].each do |data|
+          grid(0, counter).bounding_box do
+            move_down(30)
+            text data[1], size: 30, :color => "767676",:align => :center
+            move_down(10)
+            text data[0], size: 20, :color => "767676",:align => :center
+            stroke_bounds
+          end
+
+          counter = counter + 1
         end
+      end
+    else
+      bounding_box([60,425], :width => 650, :height => 140) do
+        define_grid(:columns => 4, :rows => 1, :gutter => 25)
+        counter = 0
 
-        counter = counter + 1
+        @campaign_overview.each do |data|
+          grid(0, counter).bounding_box do
+            move_down(40)
+            text data[1], size: 20, :color => "767676",:align => :center
+            move_down(10)
+            text data[0], size: 12, :color => "767676",:align => :center
+            stroke_bounds
+          end
+
+          counter = counter + 1
+        end
       end
     end
 
@@ -191,7 +207,7 @@ class ReportPdf < Prawn::Document
     header
     page_title('Cost per 1,000 Impressions by Placement')
     data = {views: @cpm_by_placement}
-    chart data, legend: false, format: :currency, baseline: true, color: '56A8D8', label: true
+    chart data, legend: false, format: :currency, baseline: true, color: '0888C4', label: true
     footer(5)
   end
 
@@ -203,7 +219,7 @@ class ReportPdf < Prawn::Document
     chart @cpm_by_audience_and_objective, legend: true,
                                           formats: [:currency, :currency, :currency, :currency],
                                           baseline: true,
-                                          colors: ['3D8FBF', '56A8D8', '90CAF9', 'BBDEFB'],
+                                          colors: ['022231', '044462', '0888c4', '29b6f6'],
                                           labels: [true, true, true, true]
     footer(6)
   end
@@ -214,7 +230,7 @@ class ReportPdf < Prawn::Document
     page_title('Total Results by Age & Gender')
     data = {"Male #{@results_by_age_and_gender[0]}%".to_sym => @results_by_age_and_gender[2],
             "Female #{@results_by_age_and_gender[1]}%".to_sym => @results_by_age_and_gender[3]}
-    chart data, legend: true, formats: [:percentage, :percentage], baseline: true, colors: ['56A8D8', 'EC407A'], labels: [true, true]
+    chart data, legend: true, formats: [:percentage, :percentage], baseline: true, colors: ['044462', '0888C4'], labels: [true, true]
     footer(7)
   end
 
@@ -223,7 +239,7 @@ class ReportPdf < Prawn::Document
     header
     page_title('Results by Audience')
     data = {views: @results_by_audience}
-    chart data, legend: false, baseline: true, color: '56A8D8', label: true
+    chart data, legend: false, baseline: true, color: '0888C4', label: true
     footer(8)
   end
 
@@ -232,7 +248,7 @@ class ReportPdf < Prawn::Document
     header
     page_title('Cost per 1,000 Impressions by Audience')
     data = {views: @cpm_by_audience}
-    chart data, legend: false, format: :currency, baseline: true, color: '56A8D8', label: true
+    chart data, legend: false, format: :currency, baseline: true, color: '0888C4', label: true
     footer(9)
   end
 
@@ -241,7 +257,7 @@ class ReportPdf < Prawn::Document
     header
     page_title('Cost per 1,000 Impressions by Ad Format')
     data = {views: @cpm_by_ad_format}
-    chart data, legend: false, format: :currency, baseline: true, color: '56A8D8', label: true
+    chart data, legend: false, format: :currency, baseline: true, color: '0888C4', label: true
     footer(10)
   end
 
@@ -250,7 +266,7 @@ class ReportPdf < Prawn::Document
     header
     page_title('Cost per 1,000 Impressions by Ad Creative')
     data = {views: @cpm_by_ad_creative}
-    chart data, legend: false, format: :currency, baseline: true, color: '56A8D8', label: true
+    chart data, legend: false, format: :currency, baseline: true, color: '0888C4', label: true
     footer(11)
   end
 
@@ -269,14 +285,13 @@ class ReportPdf < Prawn::Document
   def page_title(title)
     move_down(15)
     text title, size: 30, :color => "767676",:align => :center
-    # text @dates, size: 20, :color => "767676",:align => :center
     move_down(15)
   end
 
   def footer(page_number)
     social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
-    image social_route_logo, :at => [625,25], :scale => 0.50
-    draw_text page_number, size: 10, :at => [40,15]
+    image social_route_logo, :at => [625,15], :scale => 0.50
+    draw_text page_number, size: 10, :at => [0,0]
   end
 
   def bullet_item(level = 1, string)

@@ -42,7 +42,6 @@ class ApiController < ApplicationController
                          post_engagement: Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
                        }
 
-        # render json: age_and_gender
         render json: {date_range: @dates,
                       overview: overview_stats,
                       account_stats: account_stats,
@@ -166,7 +165,7 @@ class ApiController < ApplicationController
       results = CampaignAction.where(account_id: @account_id_number, action_type: columns, audience: audience).sum(:value)
       impressions = CampaignInsight.where(account_id: @account_id_number, audience: audience).sum(:impressions).to_f
 
-      audience_demographics.push(audience: audience, results: results, cpm: spend/(impressions/1000))
+      audience_demographics.push(audience: number_with_delimiter(audience, delimiter: ','), results: results, cpm: spend/(impressions/1000))
     end
 
     return audience_demographics
@@ -174,11 +173,11 @@ class ApiController < ApplicationController
 
   def campaign_data
     raw_data = Array.new
-    objectives = Campaign.where(account_id:@account_id_number).pluck('objective').uniq
+    objectives = Campaign.where(account_id: @account_id_number).pluck('objective').uniq
 
     objectives.each do |objective|
       campaign_data = Array.new
-      campaigns = CampaignInsight.where(account_id:@account_id_number, objective: objective)
+      campaigns = CampaignInsight.where(account_id: @account_id_number, objective: objective)
 
       campaigns.each do |campaign|
         results = CampaignAction.where(campaign_id: campaign.campaign_id, action_type: result_columns(campaign.objective)).sum(:value)
@@ -186,7 +185,7 @@ class ApiController < ApplicationController
         cpm = campaign.spend/(campaign.impressions.to_f/1000)
         score = cpm * (1/rr)
 
-        campaign_data.push(campaign_id: campaign.campaign_id,
+        campaign_data.push(campaign_id:   campaign.campaign_id,
                            campaign_name: campaign.campaign_name,
                            rr:            rr,
                            impressions:   campaign.impressions,
@@ -220,15 +219,11 @@ class ApiController < ApplicationController
                              impressions: adset_insight.sum(:impressions),
                              spend: adset_insight.sum(:spend),
                              frequency: adset_insight.average(:frequency),
-                             cpm: adset_insight.sum(:spend)/(adset_insight.sum(:impressions).to_f/1000),
-                             # cpr: adset_insight.sum(:spend)/(results)
+                             cpm: adset_insight.sum(:spend)/(adset_insight.sum(:impressions).to_f/1000)
                              })
 
     end
 
-    # return raw_data.push(budget_active: Adset.where(campaign_id: params['campaign_id'], status: 'ACTIVE').sum(:daily_budget)/100,
-    #                      budget_paused: Adset.where(campaign_id: params['campaign_id'], status: 'PAUSED').sum(:daily_budget)/100,
-    #                      budget_total: Adset.where(campaign_id: params['campaign_id']).sum(:daily_budget)/100)
     return raw_data
   end
 
@@ -325,8 +320,8 @@ class ApiController < ApplicationController
     impressions = AccountInsight.where(account_id: @account_id).select(:impressions).sum(:impressions).to_f
     website_clicks = Action.where(account_id: @account_id, action_type: 'link_click', gender: nil, age: nil).sum(:value)
     website_conversions = Action.where(account_id: @account_id, action_type: 'offsite_conversion', gender: nil, age: nil).sum(:value)
-    post_engagement = Action.where(account_id: @account_id, action_type: 'video_view', gender: nil, age: nil).sum(:value)
-    video_views = Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
+    post_engagement = Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
+    video_views = Action.where(account_id: @account_id, action_type: 'video_view', gender: nil, age: nil).sum(:value)
 
     if impressions > 0
       campaign_overview.push(['Impressions'.upcase, number_with_delimiter(impressions.round(0), delimiter: ',') ])
@@ -392,30 +387,32 @@ class ApiController < ApplicationController
     audiences.each do |audience|
       data = AdsetTargeting.where(account_id: @account_id_number, audience: audience).last
 
-      age_min = data.age_min
-      age_max = data.age_max
+      if data
+        age_min = data.age_min
+        age_max = data.age_max
 
-      if age_max >= '65'
-        extra = '+'
-      else
-        extra = ''
+        if age_max >= '65'
+          extra = '+'
+        else
+          extra = ''
+        end
+
+        audience_ages.push("People Aged #{age_min}-#{age_max}#{extra}")
+
+        if data.interests.length > 0
+          audience_intersts.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
+        else
+          audience_intersts.push('')
+        end
+
+        if data.cities.length > 0
+          audience_cities.push('<b>Geolocations</b><br><br>'.concat(data.cities.join("<br>")))
+        else
+          audience_cities.push('')
+        end
+
+        audience_sizes.push("Audience Size: #{audience}")
       end
-
-      audience_ages.push("People Aged #{age_min}-#{age_max}#{extra}")
-
-      if data.interests.length > 0
-        audience_intersts.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
-      else
-        audience_intersts.push('')
-      end
-
-      if data.cities.length > 0
-        audience_cities.push('<b>Geolocations</b><br><br>'.concat(data.cities.join("<br>")))
-      else
-        audience_cities.push('')
-      end
-
-      audience_sizes.push("Audience Size: #{audience}")
     end
 
     audience_data.push(audience_names, audience_ages, audience_intersts, audience_cities, audience_sizes)
@@ -431,12 +428,17 @@ class ApiController < ApplicationController
     cpm_by_audience_and_objective = Hash.new
     audiences = Campaign.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
 
+    objectives = Campaign.where(account_id: @account_id_number).pluck('objective').uniq
+
     audiences.each do |audience|
-      cpm_by_audience_and_objective.merge!({"#{audience} Audience".to_s.to_sym =>
-                                           {'Clicks to Website' => calculate_cpm('LINK_CLICKS', audience),
-                                            'Post Engagement' => calculate_cpm('POST_ENGAGEMENT', audience),
-                                            'Video Views' => calculate_cpm('VIDEO_VIEWS', audience),
-                                            'Website Conversions' => calculate_cpm('CONVERSIONS', audience)}})
+      audience_formatted = number_with_delimiter(audience, delimiter: ',').to_s
+      audience_objective_data = Hash.new
+
+      objectives.each do |objective|
+        audience_objective_data.merge!(objective_name(objective).to_sym => calculate_cpm(objective, audience))
+      end
+
+      cpm_by_audience_and_objective.merge!({"#{audience_formatted} Audience".to_s.to_sym => audience_objective_data})
     end
 
     return cpm_by_audience_and_objective
@@ -447,15 +449,20 @@ class ApiController < ApplicationController
 
     age_and_gender_columns = ['video_view', 'offsite_conversion', 'comment',
                               'post', 'post_like', 'like', 'link_click']
+    ages = ['13-17', '18-24', '25-34', '45-54', '55-64', '65+']
+
+    results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: ages, gender: ['male', 'female', 'unknown']).sum(:value)
+    male_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: ages, gender: ['male', 'unknown']).sum(:value)
+    female_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: ages, gender: 'female').sum(:value)
 
     male_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, gender: ['male', 'unkown']).sum(:value)
     female_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, gender: 'female').sum(:value)
     total_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns).sum(:value)
 
-    results_by_age_and_gender.push(((male_results/total_results)*100).round(0))
-    results_by_age_and_gender.push(((female_results/total_results)*100).round(0))
-    results_by_age_and_gender.push(age_and_gender.map { |data| [data[:age], (data[:male_results]*100).round(1)]}.to_h)
-    results_by_age_and_gender.push(age_and_gender.map { |data| [data[:age], (data[:female_results]*100).round(1)]}.to_h)
+    results_by_age_and_gender.push(((male_age_results/results)*100).round(1))
+    results_by_age_and_gender.push(((female_age_results/results)*100).round(1))
+    results_by_age_and_gender.push(age_and_gender.map { |data| [data[:age], (data[:male_results]).round(1)]}.to_h)
+    results_by_age_and_gender.push(age_and_gender.map { |data| [data[:age], (data[:female_results]).round(1)]}.to_h)
 
     return results_by_age_and_gender
   end

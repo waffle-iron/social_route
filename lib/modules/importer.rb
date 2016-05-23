@@ -22,7 +22,7 @@ module Importer
     # build_campaigns
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Campaign Insight Data                                   |".colorize(:green)
-    # build_campaigns_insights
+    build_campaigns_insights
     # build_campaign_insights_two
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
@@ -38,7 +38,7 @@ module Importer
     puts "| Generate Ad Data                                                 |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ads Data                                                |".colorize(:green)
-    build_ads
+    # build_ads
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------"
     puts "\nImport sucessfull \n\n".colorize(:yellow)
@@ -221,7 +221,8 @@ module Importer
         http_response = RestClient.get "#{BASE_URL}/#{campaign_id['id']}/insights",
                                         {:params => {'access_token' => ACCESS_TOKEN,
                                                      'fields' => campaign_insights_columns,
-                                                     'date_preset' => 'lifetime'}}
+                                                     'date_preset' => 'lifetime',
+                                                     'limit' => 1000}}
 
         raw_data = JSON.parse(http_response)['data']
 
