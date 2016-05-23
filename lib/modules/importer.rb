@@ -29,7 +29,7 @@ module Importer
     puts "| Generate Ad Set Data                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ad Set Data                                             |".colorize(:green)
-    build_adsets
+    # build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
     # build_adset_insights
@@ -38,7 +38,7 @@ module Importer
     puts "| Generate Ad Data                                                 |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ads Data                                                |".colorize(:green)
-    # build_ads
+    build_ads
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------"
     puts "\nImport sucessfull \n\n".colorize(:yellow)
@@ -415,68 +415,61 @@ module Importer
 
   def self.build_ads
     Ad.delete_all
-    AdAction.delete_all
 
     ad_columns = ['account_id','ad_id','ad_name','campaign_id','objective',
-                  'impressions','spend','frequency','reach', 'actions',
+                  'impressions','spend','frequency','reach',
                   'campaign_name', 'adset_id']
 
     account_ids.each do |account_id|
-      ad_ids = JSON.parse(RestClient.get "#{BASE_URL}/#{account_id}/ads",
+      raw_data = JSON.parse(RestClient.get "#{BASE_URL}/#{account_id}/insights",
                                           {:params => {'access_token' => ACCESS_TOKEN,
-                                                       'date_preset' =>
-                                                       'lifetime'}})['data']
+                                                       'date_preset' =>'lifetime',
+                                                       'level' => 'ad',
+                                                       'fields' => ad_columns,
+                                                       'limit' => 1000}})['data']
 
-      ad_ids.each do |ad_id|
-        http_response = RestClient.get "#{BASE_URL}/#{ad_id['id']}/insights",
-                                        {:params => {'access_token' => ACCESS_TOKEN,
-                                                     'fields' => ad_columns,
-                                                     'date_preset' => 'lifetime',
-                                                     'limit' => 1000,
-                                                     'breakdowns' => 'placement'}}
-        raw_data = JSON.parse(http_response)['data'].sort_by{|x| x[:name]}.reverse
+      raw_data.each do |ad|
+        total_bars = bar_count(ad['ad_name'])
 
-        raw_data.each do |ad|
-          Ad.create(
-            account_id:    ad['account_id'],
-            ad_id:         ad['ad_id'],
-            adset_id:      ad['adset_id'],
-            ad_name:       ad['ad_name'],
-            simple_name:   ad['ad_name'].split('|')[0].strip,
-            campaign_id:   ad['campaign_id'],
-            campaign_name: ad['campaign_name'],
-            objective:     ad['objective'],
-            impressions:   ad['impressions'],
-            spend:         ad['spend'],
-            frequency:     ad['frequency'],
-            reach:         ad['reach'],
-            placement:     ad['placement'],
-            audience:      ad['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,""),
-            format:        ad['ad_name'].split('|')[3].strip,
-            edition:       ad['ad_name'].split('|')[4].strip
-          )
+        puts ad['ad_name']
+        puts total_bars
 
-          unless ad['actions'].nil? || ad['actions'].blank?
-            ad['actions'].each do |action|
-              AdAction.create(
-                action_type:   action['action_type'],
-                value:         action['value'],
-                account_id:    ad['account_id'],
-                campaign_id:   ad['campaign_id'],
-                campaign_name: ad['campaign_name'],
-                objective:     ad['objective'],
-                placement:     ad['placement'],
-                audience:      ad['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,"")
-              )
-            end
-          end
+        if total_bars == 4
+          simple_name = ad['ad_name'].split('|')[0].to_s.strip
+          format = ad['ad_name'].split('|')[3].to_s.strip
+          edition = ad['ad_name'].split('|')[4].to_s.strip
+        elsif total_bars == 3
+          simple_name = ad['ad_name'].split('|')[0].to_s.strip
+          format = ad['ad_name'].split('|')[2].to_s.strip
+          edition = ad['ad_name'].split('|')[3].to_s.strip
+        else
+          simple_name = 'Mislabeled'
+          format = 'Mislabeled'
+          edition = nil
         end
+
+        Ad.create(
+          account_id:    ad['account_id'],
+          ad_id:         ad['ad_id'],
+          adset_id:      ad['adset_id'],
+          ad_name:       ad['ad_name'],
+          simple_name:   simple_name,
+          campaign_id:   ad['campaign_id'],
+          campaign_name: ad['campaign_name'],
+          objective:     ad['objective'],
+          impressions:   ad['impressions'],
+          spend:         ad['spend'],
+          frequency:     ad['frequency'],
+          reach:         ad['reach'],
+          audience:      ad['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,""),
+          format:        format,
+          edition:       edition
+        )
       end
     end
 
     # Output Ad and Ad Action Data
     puts "Ads Created: #{Ad.count}"
-    puts "Ads Created: #{AdAction.count}"
   end
 
   private
@@ -499,5 +492,9 @@ module Importer
     end
 
     return campaign_ids
+  end
+
+  def self.bar_count(string)
+    string.count('|')
   end
 end

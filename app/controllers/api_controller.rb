@@ -242,7 +242,9 @@ class ApiController < ApplicationController
     json_data = raw_data.group_by{|h| h[:format]}.map{|k,v| v.reduce(:merge)}
 
     json_data.each do |data|
-      final_data.push(format: data[:format], cpm: data[:spend]/(data[:impressions].to_f/1000))
+      unless data[:format].to_s == '2016' || data[:format].to_s == 'Mislabeled'
+        final_data.push(format: data[:format], cpm: data[:spend]/(data[:impressions].to_f/1000))
+      end
     end
 
     return final_data
@@ -258,7 +260,9 @@ class ApiController < ApplicationController
     json_data = raw_data.group_by{|h| h[:simple_name]}.map{|k,v| v.reduce(:merge)}
 
     json_data.each do |data|
-      final_data.push(simple_name: data[:simple_name], cpm: data[:spend]/(data[:impressions].to_f/1000))
+      unless data[:simple_name].to_s == '2016' || data[:simple_name].to_s == 'Mislabeled'
+        final_data.push(simple_name: data[:simple_name], cpm: data[:spend]/(data[:impressions].to_f/1000))
+      end
     end
 
     return final_data

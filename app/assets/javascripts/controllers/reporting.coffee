@@ -287,7 +287,7 @@
         focusTarget: 'datum'
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
-        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
+        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
         colors: ['#0888C4']
@@ -328,8 +328,8 @@
         animation: { startup: true, duration: 1000, easing: 'in' }
         focusTarget: 'datum'
         legend: { position: 'none'}
-        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
-        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}}
+        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
         colors: ['#0888C4']
@@ -371,7 +371,7 @@
         focusTarget: 'datum'
         legend: { position: 'none'}
         hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
-        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
+        vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
         colors: ['#0888C4']
