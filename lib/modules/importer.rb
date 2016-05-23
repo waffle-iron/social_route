@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAKZClufl3LZB8CEmeEe5ONuca69f0UJXZBXbfmeBHfOmNfSv3eIQWfr0JvIAjVt13FjHjAAJcTrhnfZCOYZCzX7sPT0cs5DZCVZAUzsTLp33Ir7OaZCXZCXClgPPZCkF4RZBwBw2GW0hoVJ5hOo1ThNdPjmOlWD3BqS1wZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBACpwFhVmwa7towVzr1plzrFYA7NxwGG5UZB2Qa7uXZBUzduKLT7GdtGYkODGZCG0Uz6hAYW6rw12XAd0k5T9N9L5ldOft6ZB0WtFOAZBi60euPVVXvEXJ7LoTBwe2ihPWOhJ5x7jYZA7ftHTHNw8kZD'
 
   def self.import
     puts "Start Import Rake Task... \n".colorize(:yellow)
@@ -10,34 +10,35 @@ module Importer
     puts "| Generate Account Data                                            |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Account Data                                            |".colorize(:green)
-    build_accounts
+    # build_accounts
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    build_account_insights
+    # build_account_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Campaign Data                                           |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Campaign Data                                           |".colorize(:green)
-    build_campaigns
+    # build_campaigns
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Campaign Insight Data                                   |".colorize(:green)
-    build_campaigns_insights
+    # build_campaigns_insights
+    build_campaign_insights_two
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Set Data                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ad Set Data                                             |".colorize(:green)
-    build_adsets
+    # build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    build_adset_insights
+    # build_adset_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Data                                                 |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ads Data                                                |".colorize(:green)
-    build_ads
+    # build_ads
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------"
     puts "\nImport sucessfull \n\n".colorize(:yellow)
@@ -92,6 +93,10 @@ module Importer
           date:          account_insight['date_start']
         )
 
+
+        # act_1219094488105498/insights?breakdowns=placement&date_preset=lifetime
+
+
         unless account_insight['actions'].nil?
           account_insight['actions'].each do |action|
             Action.create(
@@ -129,6 +134,26 @@ module Importer
             )
           end
         end
+      end
+
+      # Placement Breakdown
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
+                                     {:params => {'access_token' => ACCESS_TOKEN,
+                                                  'date_preset' => 'lifetime',
+                                                  'breakdowns' => ['placement']
+                                                  }}
+
+      raw_data = JSON.parse(http_response)['data']
+
+      raw_data.each do |account_placement|
+        AccountPlacement.create(
+          date_start:  account_placement['date_start'],
+          date_stop:   account_placement['date_stop'],
+          account_id:  account_placement['account_id'],
+          impressions: account_placement['impressions'],
+          spend:       account_placement['spend'],
+          placement:   account_placement['placement']
+        )
       end
     end
 
@@ -231,6 +256,36 @@ module Importer
     # Output Campaign Insight and Campaign Action Data
     puts "Campaign Insights Created: #{CampaignInsight.count}"
     puts "Campaigns Actions Created: #{CampaignAction.count}"
+  end
+
+  def self.build_campaign_insights_two
+    CampaignInsightTwo.delete_all
+
+    account_ids.each do |account_id|
+      campaign_insights_two_columns = ['campaign_name', 'impressions', 'spend',
+                                       'cpm', 'campaign_id', 'objective']
+
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
+                                      {:params => {'access_token' => ACCESS_TOKEN,
+                                                   'fields' => campaign_insights_two_columns,
+                                                   'date_preset' => 'lifetime',
+                                                   'level' => 'campaign'}}
+
+        raw_data = JSON.parse(http_response)['data']
+
+        raw_data.each do |campaign_insight|
+          CampaignInsightTwo.create(
+            account_id:    account_id,
+            campaign_id:   campaign_insight['campaign_id'],
+            campaign_name: campaign_insight['campaign_name'],
+            spend:         campaign_insight['spend'],
+            impressions:   campaign_insight['impressions'],
+            audience:      campaign_insight['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,""),
+            cpm:           campaign_insight['cpm'],
+            objective:     campaign_insight['objective']
+          )
+        end
+      end
   end
 
   def self.build_adsets

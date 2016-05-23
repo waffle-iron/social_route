@@ -42,7 +42,7 @@ class ApiController < ApplicationController
                          post_engagement: Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
                        }
 
-        # render json: cpm_by_audience
+        # render json: age_and_gender
         render json: {date_range: @dates,
                       overview: overview_stats,
                       account_stats: account_stats,
@@ -81,7 +81,6 @@ class ApiController < ApplicationController
 
   def cpm_by_placement
     data = []
-    result_columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
 
     placements = [{name: 'Desktop News Feed',    placement_columns: ['desktop_feed', 'desktop_video_channel']},
                   {name: 'Mobile News Feed',     placement_columns: ['mobile_feed', 'mobile_video_channel']},
@@ -90,8 +89,8 @@ class ApiController < ApplicationController
                   {name: 'Audience Network',     placement_columns: 'mobile_external_only'}]
 
     placements.each do |placement|
-      impressions = Ad.where(account_id:@account_id_number, placement: placement[:placement_columns]).sum(:impressions).to_f
-      spend       = Ad.where(account_id:@account_id_number, placement: placement[:placement_columns]).sum(:spend)
+      impressions = AccountPlacement.where(account_id: @account_id_number, placement: placement[:placement_columns]).sum(:impressions).to_f
+      spend       = AccountPlacement.where(account_id: @account_id_number, placement: placement[:placement_columns]).sum(:spend)
 
       data.push(placement: placement[:name], cpm: spend/(impressions/1000))
     end
@@ -101,8 +100,8 @@ class ApiController < ApplicationController
 
   def cpm_by_audience
     cpm_by_audience_and_objective = Array.new
-    audiences = Campaign.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
-    objectives = Campaign.where(account_id:@account_id_number).pluck('objective').uniq
+    audiences = CampaignInsightTwo.where(account_id: @account_id).order(:audience).pluck('audience').uniq
+    objectives = CampaignInsightTwo.where(account_id: @account_id).pluck('objective').uniq
 
     objectives.each do |objective|
       objective_data = Hash.new
@@ -136,12 +135,11 @@ class ApiController < ApplicationController
                               'post', 'post_like', 'like', 'link_click']
 
     ages.each do |age|
-      male_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, gender: ['male', 'unkown']).sum(:value)
-      female_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, gender: 'female').sum(:value)
-      male_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: age, gender: ['male', 'unkown']).sum(:value)
+      results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: ages, gender: ['male', 'female', 'unknown']).sum(:value)
+      male_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: age, gender: ['male', 'unknown']).sum(:value)
       female_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: age, gender: 'female').sum(:value)
 
-      age_and_gender_breakdowns.push(age: age, male_results: male_age_results/male_results, female_results: female_age_results/female_results)
+      age_and_gender_breakdowns.push(age: age, male_results: (male_age_results/results)*100, female_results: (female_age_results/results)*100)
     end
 
     return age_and_gender_breakdowns
@@ -501,8 +499,8 @@ class ApiController < ApplicationController
   end
 
   def calculate_cpm(objective, audience)
-    impressions = Campaign.where(account_id:@account_id_number, objective: objective, audience: audience).sum(:impressions).to_f
-    spend = Campaign.where(account_id:@account_id_number, objective: objective, audience: audience).sum(:spend)
+    impressions = CampaignInsightTwo.where(account_id: @account_id, objective: objective, audience: audience).sum(:impressions).to_f
+    spend = CampaignInsightTwo.where(account_id: @account_id, objective: objective, audience: audience).sum(:spend)
 
     if impressions > 0
       return spend/(impressions/1000)

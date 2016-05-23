@@ -24,25 +24,6 @@
         return ''
       decodeURIComponent results[2].replace(/\+/g, ' ')
 
-    calculateAccountCols = ->
-      total = 0
-
-      if $scope.reporting.account_stats.impressions > 0
-        total = total + 1
-      if $scope.reporting.account_stats.website_clicks > 0
-        total = total + 1
-      if $scope.reporting.account_stats.website_conversions > 0
-        total = total + 1
-      if $scope.reporting.account_stats.post_engagement > 0
-        total = total + 1
-      if $scope.reporting.account_stats.video_views > 0
-        total = total + 1
-
-      if total is 4
-        $scope.standardCols = true
-      else
-        $scope.standardCols = false
-
     Reporting.index(account_id: getParameterByName('account_id')).$promise
     .then (reportingData) ->
       _.forEach reportingData.overview, (objectiveData) ->
@@ -85,7 +66,7 @@
 
       $scope.reporting = reportingData
 
-      calculateAccountCols()
+
 
       createCpmChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
@@ -129,54 +110,16 @@
         vAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency' }
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#29B6F6']
+        colors: ['#0888C4']
 
       $scope.cpmChart = cpmChart
-
-    createCprChart = (cprData)->
-      cprChart = {}
-      cprChart.type = 'ColumnChart'
-      cprChart.data = [
-        [
-         {type: 'string', label: 'Placement'}
-         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
-         {type: 'number', label: 'CPR'}
-        ]
-      ]
-
-      _.forEach cprData, (n) ->
-        cprChart.data.push([
-          n.placement
-          {v: "<div style='width: 220px; padding: 20px;'>" +
-              "<strong style='color: #424242'><p style='font-size: 200%'>" + n.placement + "</p></strong></span><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>CPR<br><span style='font-size: 200%; color:#29B6F6;'>" + currencyFilter(n.cpr) + "<br></span></p>" +
-              "</div>", p: {}
-          }
-          n.cpr
-        ])
-
-      cprChart.options =
-        titleTextStyle: {color: '#797575' }
-        displayExactValues: true
-        is3D: true
-        tooltip: {isHtml: true}
-        focusTarget: 'category'
-        animation: { startup: true, duration: 1000, easing: 'in' }
-        legend: { position: 'none'}
-        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
-        vAxis: { title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '80%', height: '80%'}
-        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#E91E63']
-
-      $scope.cprChart = cprChart
 
     createAudiencesChart = (rawData) ->
       audiencesChart = {}
       audiencesChart.type = 'BarChart'
 
       audiences = rawData.audiences
-      colors = ['#1B9E77', '#D95F02', '#7570B3', '#3D5AFE']
+      colors = ['#022231', '#044462', '#0888c4', '#29b6f6']
 
       legendData = [{type: 'string', label: 'Audience'}, {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}]
 
@@ -188,7 +131,6 @@
       _.forEach _.sortBy(rawData.data, 'objective'), (objectiveData) ->
           data = [objectiveData.objective]
           tooltipData = ''
-
 
           i = 1
           while i <= audiences.length
@@ -234,8 +176,8 @@
       $scope.audiencesChart = audiencesChart
 
     createAgeGenderChart = (ageGenderData) ->
-      sum_male = numberFilter(_.sumBy(ageGenderData, 'male_results')*100, 0)
-      sum_female = numberFilter(_.sumBy(ageGenderData, 'female_results')*100, 0)
+      sum_male = numberFilter(_.sumBy(ageGenderData, 'male_results'), 1)
+      sum_female = numberFilter(_.sumBy(ageGenderData, 'female_results'), 1)
 
       ageGenderChart = {}
       ageGenderChart.type = 'ColumnChart'
@@ -255,14 +197,14 @@
           n.age
           {v: "<div style='width: 220px; padding: 20px;'>" +
               "<strong style='color: #424242'><p style='font-size: 200%'>Age: " + n.age + "</p></strong></span><br>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#304FFE;'>" + numberFilter(n.male_results * 100, 2) + '%' + "<br></span></p>" +
-              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#F50057;'>" + numberFilter(n.female_results * 100, 2) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Male<br><span style='font-size: 200%; color:#304FFE;'>" + numberFilter(n.male_results, 2) + '%' + "<br></span></p>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results Female<br><span style='font-size: 200%; color:#F50057;'>" + numberFilter(n.female_results, 2) + '%' + "<br></span></p>" +
               "</div>", p: {}
           }
-          numberFilter(n.male_results * 100, 2)
-          numberFilter(n.male_results * 100, 2) + '%'
-          numberFilter(n.female_results * 100, 2)
-          numberFilter(n.female_results * 100, 2) + '%'
+          numberFilter(n.male_results, 2)
+          numberFilter(n.male_results, 2) + '%'
+          numberFilter(n.female_results, 2)
+          numberFilter(n.female_results, 2) + '%'
         ])
 
       ageGenderChart.options =
@@ -283,7 +225,7 @@
        }
         chartArea: {width: '95%', height: '90%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#304FFE', '#F50057']
+        colors: ['#0888C4', '#044462']
 
 
       $scope.ageGenderChart = ageGenderChart
@@ -306,7 +248,7 @@
         percentage = percentage_raw + '%'
 
         generalChart.data.push([
-          data.audience
+          numberFilter(data.audience,0)
           data.results
           percentage
           {v: "<div style='width: 160px; padding: 20px;'>" +
@@ -330,6 +272,7 @@
         vAxis: {title: 'Results', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, viewWindowMode:'explicit', viewWindow: {min:0}}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#0888C4']
 
       $scope.generalChart = generalChart
 
@@ -351,7 +294,7 @@
         percentage = percentage_raw + '%'
 
         generalChartCPM.data.push([
-          data.audience
+          numberFilter(data.audience,0)
           data.cpm
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
@@ -375,7 +318,7 @@
         vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#00838F']
+        colors: ['#0888C4']
 
       $scope.generalChartCPM = generalChartCPM
 
@@ -417,7 +360,7 @@
         vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#00838F']
+        colors: ['#0888C4']
 
       $scope.adFormatChart = adFormatChart
 
@@ -459,7 +402,7 @@
         vAxis: {title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency'}
         chartArea: {width: '80%', height: '80%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#00838F']
+        colors: ['#0888C4']
 
       $scope.adDataChart = adDataChart
 

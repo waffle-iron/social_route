@@ -9,7 +9,7 @@
 </center>
 
 <div ng-controller='ReportingCtrl'>
-  <a class='waves-effect waves-light btn right orange darken-1'
+  <a class='waves-effect waves-light btn right orange darken-1 no-print'
      ng-click="generateReport('act_1219093434772270')">
     Generate PDF
   </a>
@@ -18,7 +18,7 @@
     <div class='col m3' ng-if='reporting.account_stats.impressions > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
-          <h4 class='center-align' style='color: #3F6FCF;'>
+          <h4 class='center-align' style='color: #0888C4;'>
             {{reporting.account_stats.impressions | number:0}}
           </h4>
           <h6 class='center-align'>Impressions</h6><br>
@@ -28,7 +28,7 @@
     <div class='col m3' ng-if='reporting.account_stats.website_clicks > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
-          <h4 class='center-align' style='color: #DC3912'>
+          <h4 class='center-align' style='color: #0888C4'>
             {{reporting.account_stats.website_clicks | number:0}}
           </h4>
           <h6 class='center-align'>Website Clicks</h6><br>
@@ -38,7 +38,7 @@
     <div class='col m3' ng-if='reporting.account_stats.website_conversions > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
-          <h4 class='center-align' style='color: #8E24AA'>
+          <h4 class='center-align' style='color: #0888C4'>
             {{reporting.account_stats.website_conversions | number:0}}
           </h4>
           <h6 class='center-align'>Website Conversions</h6><br>
@@ -48,7 +48,7 @@
     <div class='col m3' ng-if='reporting.account_stats.post_engagement > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
-          <h4 class='center-align' style='color: #109618'>
+          <h4 class='center-align' style='color: #0888C4'>
             {{reporting.account_stats.post_engagement | number:0}}
           </h4>
           <h6 class='center-align'>Likes, Comments, and Shares</h6>
@@ -58,7 +58,7 @@
     <div class='col m3' ng-if='reporting.account_stats.video_views > 0'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1' style='height: 160px;'>
-          <h4 class='center-align' style='color: #FF9900'>
+          <h4 class='center-align' style='color: #0888C4'>
             {{reporting.account_stats.video_views | number:0}}
           </h4>
           <h6 class='center-align'>Video Views</h6><br>
