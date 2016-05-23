@@ -17,7 +17,7 @@ Rails.application.routes.draw do
 
   match '/dashboard', to: 'static_pages#dashboard', via: 'get'
   match '/overview', to: 'static_pages#overview', via: 'get'
-  match '/overview/adsets', to: 'static_pages#overview_adsets', via: 'get'
+  match '/overview/adsets', to: 'static_pages#adset_overview', via: 'get'
   match '/reporting', to: 'static_pages#reporting', via: 'get'
 
   match '/api/dashboard', to: 'api#dashboard', via: 'get'

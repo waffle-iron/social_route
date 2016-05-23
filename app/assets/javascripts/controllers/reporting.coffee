@@ -13,7 +13,6 @@
         $window.open('/api/reporting.pdf?account_id=' + account_id
                      , '_blank')
 
-
     getParameterByName = (name) ->
       url = window.location.href
       name = name.replace(/[\[\]]/g, '\\$&')
@@ -150,97 +149,54 @@
 
       $scope.cprChart = cprChart
 
-    createAudiencesChart = (objectives)->
+    createAudiencesChart = (rawData) ->
       audiencesChart = {}
       audiencesChart.type = 'BarChart'
 
-      audiencesChart.data = [
-        [
-         {type: 'string', label: 'Audience'}
-         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
-         {type: 'number', label: '10,000 Audience'}
-         {type: 'number', label: '160,000 Audience'}
-         {type: 'number', label: '2,200,000 Audience'}
-         {type: 'number', label: '520,000 Audience'}
-        ]
-      ]
+      audiences = rawData.audiences
+      colors = ['#1B9E77', '#D95F02', '#7570B3', '#3D5AFE']
 
-      _.forEach objectives, (objectiveData) ->
-          if objectiveData.audiences.length is 1
-            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
-            cpm_2 = null
-            cpm_3 = null
-            cpm_4 = null
-            audience_1 = objectiveData.audiences[0]['audience']
-            audience_2 = null
-            audience_3 = null
-            audience_4 = null
-          if objectiveData.audiences.length is 2
-            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
-            cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
-            cpm_3 = null
-            cpm_4 = null
-            audience_1 = objectiveData.audiences[0]['audience']
-            audience_2 = objectiveData.audiences[1]['audience']
-            audience_3 = null
-            audience_4 = null
-          if objectiveData.audiences.length is 3
-            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
-            cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
-            cpm_3 = objectiveData.audiences[2]['spend']/(objectiveData.audiences[2]['impressions']/1000)
-            cpm_4 = null
-            audience_1 = objectiveData.audiences[0]['audience']
-            audience_2 = objectiveData.audiences[1]['audience']
-            audience_3 = objectiveData.audiences[2]['audience']
-            audience_4 = null
+      legendData = [{type: 'string', label: 'Audience'}, {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}]
 
-          if objectiveData.audiences.length is 4
-            cpm_1 = objectiveData.audiences[0]['spend']/(objectiveData.audiences[0]['impressions']/1000)
-            cpm_2 = objectiveData.audiences[1]['spend']/(objectiveData.audiences[1]['impressions']/1000)
-            cpm_3 = objectiveData.audiences[2]['spend']/(objectiveData.audiences[2]['impressions']/1000)
-            cpm_4 = objectiveData.audiences[3]['spend']/(objectiveData.audiences[3]['impressions']/1000)
-            audience_1 = objectiveData.audiences[0]['audience']
-            audience_2 = objectiveData.audiences[1]['audience']
-            audience_3 = objectiveData.audiences[2]['audience']
-            audience_4 = objectiveData.audiences[3]['audience']
+      _.forEach audiences, (audience) ->
+        legendData.push({type: 'number', label: numberFilter(audience) + ' Audience'})
 
-          audiencesChart.data.push([
-            objectiveData.objective
-            if audience_4 isnt null
-              {v: "<div style='width: 180px; padding: 20px;'>" +
-                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_2 + " Audience <br><span style='font-size: 200%; color:#D95F02;'>" +   currencyFilter(cpm_2) + "<br></span></p>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_3 + " Audience <br><span style='font-size: 200%; color:#7570B3;'>" +   currencyFilter(cpm_3) + "<br></span></p>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_4 + " Audience <br><span style='font-size: 200%; color:#7570B3;'>" +   currencyFilter(cpm_4) + "<br></span></p>" +
-                  "</div>", p: {}
-              }
-            else if audience_3 isnt null
-              {v: "<div style='width: 180px; padding: 20px;'>" +
-                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_2 + " Audience <br><span style='font-size: 200%; color:#D95F02;'>" +   currencyFilter(cpm_2) + "<br></span></p>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_3 + " Audience <br><span style='font-size: 200%; color:#7570B3;'>" +   currencyFilter(cpm_3) + "<br></span></p>" +
-                  "</div>", p: {}
-              }
-            else if audience_2 isnt null
-              {v: "<div style='width: 180px; padding: 20px;'>" +
-                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_2 + " Audience <br><span style='font-size: 200%; color:#D95F02;'>" +   currencyFilter(cpm_2) + "<br></span></p>" +
-                  "</div>", p: {}
-              }
-            else
-              {v: "<div style='width: 180px; padding: 20px;'>" +
-                  "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
-                  "<p style='font-size: 120%'><span style='color: #616161'><b> " + audience_1 + " Audience <br><span style='font-size: 200%; color:#1B9E77;'>" +   currencyFilter(cpm_1) + "<br></span></p>" +
-                  "</div>", p: {}
-              }
-            cpm_1
-            cpm_2
-            cpm_3
-            cpm_4
-          ])
+      audiencesChart.data = [legendData]
+      _.forEach _.sortBy(rawData.data, 'objective'), (objectiveData) ->
+          data = [objectiveData.objective]
+
+          tooltipData = ''
+
+          console.log _.findKey(objectiveData, objectiveData[Object.keys(objectiveData)[i]])
+
+          i = 1
+          while i <= audiences.length
+            if objectiveData[Object.keys(objectiveData)[i]] isnt null
+              text = "<p style='font-size: 120%'><span style='color: #616161'><b> " +
+                     Object.keys(objectiveData)[i] + " Audience <br><span style='font-size: 200%; color:" +
+                     colors[i-1] + ";'>" +
+                     currencyFilter(objectiveData[Object.keys(objectiveData)[i]]) +
+                     "<br></span></p>"
+              tooltipData = tooltipData + text
+            i++
+
+          console.log tooltipData
+
+          tooltipData =
+          data.push(
+            {v: "<div style='width: 180px; padding: 20px;'>" +
+                "<strong style='color: #424242'>" + objectiveData.objective + "</strong></span><br><br>" +
+                tooltipData +
+                "</div>", p: {}
+            }
+          )
+
+          i = 1
+          while i <= audiences.length
+            data.push(objectiveData[Object.keys(objectiveData)[i]])
+            i++
+
+          audiencesChart.data.push(data)
 
       audiencesChart.options =
         titleTextStyle: {color: '#797575' }
@@ -250,17 +206,17 @@
         animation: { startup: true, duration: 1000, easing: 'in' }
         focusTarget: 'category'
         legend: { position: 'bottom'}
-        hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }, format: 'currency'  }
+        hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}, gridlines: { count: -1}  }
         vAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
-        chartArea: {width: '70%', height: '75%'}
+        chartArea: {width: '70%', height: '70%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
-        colors: ['#1B9E77', '#D95F02', '#7570B3', '#3D5AFE']
+        colors: colors
 
       $scope.audiencesChart = audiencesChart
 
     createAgeGenderChart = (ageGenderData) ->
-      sum_male =numberFilter(_.sumBy(ageGenderData, 'male_results')*100, 0)
-      sum_female =numberFilter(_.sumBy(ageGenderData, 'female_results')*100, 0)
+      sum_male = numberFilter(_.sumBy(ageGenderData, 'male_results')*100, 0)
+      sum_female = numberFilter(_.sumBy(ageGenderData, 'female_results')*100, 0)
 
       ageGenderChart = {}
       ageGenderChart.type = 'ColumnChart'

@@ -1,18 +1,22 @@
 class StaticPagesController < ApplicationController
   before_action :require_login
-  
+  before_action :set_account
+
   def dashboard
   end
 
   def overview
-    @account = Account.find_by_account_id(params['account_id'])
   end
 
-  def overview_adsets
-    @campaign = Campaign.find_by_campaign_id(params['campaign_id'])
+  def adset_overview
   end
 
   def reporting
-    @account = Account.find_by_account_id(params['account_id'])
+  end
+
+  private
+
+  def set_account
+     @account = Account.find_by_account_id(params['account_id'])
   end
 end

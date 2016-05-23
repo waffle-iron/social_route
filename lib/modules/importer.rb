@@ -2,7 +2,7 @@ module Importer
   require 'rest-client'
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
-  ACCESS_TOKEN = 'EAANNAsbKK4kBAAL2BN5pRllBZA9cZBrSjlk6jHBcwqfscJZAzjoXOJbKFHu2WkzeWg8hsYUibnC6NP5vq3RYvRDEF0hxZC3VEX6MOw83KE3m5h2ZAmbVuPHrZBk88bJTxAL3OTUsCFN4bTUZC1T81uGYswafQWuZBZAVZAaK83RAIHCwZDZD'
+  ACCESS_TOKEN = 'EAANNAsbKK4kBAKZClufl3LZB8CEmeEe5ONuca69f0UJXZBXbfmeBHfOmNfSv3eIQWfr0JvIAjVt13FjHjAAJcTrhnfZCOYZCzX7sPT0cs5DZCVZAUzsTLp33Ir7OaZCXZCXClgPPZCkF4RZBwBw2GW0hoVJ5hOo1ThNdPjmOlWD3BqS1wZDZD'
 
   def self.import
     puts "Start Import Rake Task... \n".colorize(:yellow)
@@ -10,19 +10,19 @@ module Importer
     puts "| Generate Account Data                                            |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Account Data                                            |".colorize(:green)
-    # build_accounts
+    build_accounts
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    # build_account_insights
+    build_account_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Campaign Data                                           |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Campaign Data                                           |".colorize(:green)
-    # build_campaigns
+    build_campaigns
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Campaign Insight Data                                   |".colorize(:green)
-    # build_campaigns_insights
+    build_campaigns_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Set Data                                             |".colorize(:green)
@@ -31,13 +31,13 @@ module Importer
     build_adsets
     puts "| Done                                                             |".colorize(:green)
     puts "| Building Account Insight Data                                    |".colorize(:green)
-    # build_adset_insights
+    build_adset_insights
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Generate Ad Data                                                 |".colorize(:green)
     puts "--------------------------------------------------------------------".colorize(:green)
     puts "| Building Ads Data                                                |".colorize(:green)
-    # build_ads
+    build_ads
     puts "| Done                                                             |".colorize(:green)
     puts "--------------------------------------------------------------------"
     puts "\nImport sucessfull \n\n".colorize(:yellow)
@@ -167,7 +167,7 @@ module Importer
             start_time:    campaign['date_start'],
             stop_time:     campaign['date_stop'],
             placement:     campaign['placement'],
-            audience:      campaign['campaign_name'].split('|')[1].strip,
+            audience:      campaign['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,""),
             spend:         campaign['spend'],
             frequency:     campaign['frequency'],
             impressions:   campaign['impressions'],
@@ -208,7 +208,7 @@ module Importer
             campaign_name: campaign_insight['campaign_name'],
             spend:         campaign_insight['spend'],
             impressions:   campaign_insight['impressions'],
-            audience:      campaign_insight['campaign_name'].split('|')[1].strip
+            audience:      campaign_insight['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,"")
           )
 
           campaign_insight['actions'].each do |action|
@@ -220,7 +220,7 @@ module Importer
                 campaign_id: campaign_id['id'],
                 campaign_name: campaign_insight['campaign_name'],
                 objective: campaign_insight['objective'],
-                audience: campaign_insight['campaign_name'].split('|')[1].strip
+                audience: campaign_insight['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,"")
               )
             end
           end
@@ -237,9 +237,9 @@ module Importer
     Adset.delete_all
 
     adset_columns = ['name','adset_id','account_id','campaign_id','status',
-                     'daily_budget', 'targeting']
+                     'daily_budget', 'targeting', 'objective']
 
-    ['act_1219093434772270'].each do |account_id|
+    account_ids.each do |account_id|
       http_response = RestClient.get "#{BASE_URL}/#{account_id}/adsets",
                                       {:params => {'access_token' => ACCESS_TOKEN,
                                                    'fields' => adset_columns,
@@ -255,13 +255,14 @@ module Importer
 
         Adset.create(
           name:         adset['name'],
-          adset_id:     adset['adset_id'],
+          adset_id:     adset['id'],
           account_id:   adset['account_id'],
           campaign_id:  adset['campaign_id'],
           status:       adset['status'],
           daily_budget: adset['daily_budget'],
           audience:     adset['name'].split('|')[3].strip,
-          targeting:    adset['targeting']
+          targeting:    adset['targeting'],
+          objective:    adset['objective']
         )
 
         if adset['targeting']
@@ -292,7 +293,7 @@ module Importer
           account_id: adset['account_id'],
           campaign_id: adset['campaign_id'],
           adset_id: adset['adset_id'],
-          audience: adset['name'].split('|')[3].strip,
+          audience: adset['name'].split('|')[3].strip.gsub(/[\s,]/ ,""),
           interests: interests,
           cities: cities
         )
@@ -332,7 +333,7 @@ module Importer
             account_id:   adset_insight['account_id'],
             campaign_id:  adset_insight['campaign_id'],
             objective:    adset_insight['objective'],
-            audience:     adset_insight['adset_name'].split('|')[3].strip
+            audience:     adset_insight['adset_name'].split('|')[3].strip.gsub(/[\s,]/ ,"")
           )
 
           # adset_insight['actions'].each do |action|
@@ -395,7 +396,7 @@ module Importer
             frequency:     ad['frequency'],
             reach:         ad['reach'],
             placement:     ad['placement'],
-            audience:      ad['campaign_name'].split('|')[1].strip,
+            audience:      ad['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,""),
             format:        ad['ad_name'].split('|')[3].strip,
             edition:       ad['ad_name'].split('|')[4].strip
           )
@@ -410,7 +411,7 @@ module Importer
                 campaign_name: ad['campaign_name'],
                 objective:     ad['objective'],
                 placement:     ad['placement'],
-                audience:      ad['campaign_name'].split('|')[1].strip
+                audience:      ad['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,"")
               )
             end
           end

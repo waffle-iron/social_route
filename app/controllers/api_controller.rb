@@ -42,12 +42,12 @@ class ApiController < ApplicationController
                          post_engagement: Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
                        }
 
+        # render json: cpm_by_audience
         render json: {date_range: @dates,
                       overview: overview_stats,
                       account_stats: account_stats,
                       cpm_cpr_placement: cpm_by_placement,
                       audiences: cpm_by_audience,
-                      audiences_cpr: cpr_by_audience,
                       demographics: {age_and_gender: age_and_gender,
                                      audience_breakdowns: audience_demographics},
                       ad_formats: ad_formats,
@@ -66,10 +66,10 @@ class ApiController < ApplicationController
     spend = Campaign.where(account_id: @account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
 
     results = [
-      {objective: "CONVERSIONS",     results: CampaignAction.where(account_id: @account_id_number, objective: 'CONVERSIONS', action_type: "offsite_conversion").sum(:value)},
       {objective: "LINK_CLICKS",     results: CampaignAction.where(account_id: @account_id_number, objective: 'LINK_CLICKS', action_type: "link_click").sum(:value)},
       {objective: "POST_ENGAGEMENT", results: CampaignAction.where(account_id: @account_id_number, objective: 'POST_ENGAGEMENT', action_type: "post_engagement").sum(:value)},
-      {objective: "VIDEO_VIEWS",     results: Action.where(account_id: @account_id, action_type: 'video_view',  gender: nil, age: nil).sum(:value)}
+      {objective: "VIDEO_VIEWS",     results: Action.where(account_id: @account_id, action_type: 'video_view',  gender: nil, age: nil).sum(:value)},
+      {objective: "CONVERSIONS",     results: CampaignAction.where(account_id: @account_id_number, objective: 'CONVERSIONS', action_type: "offsite_conversion").sum(:value)}
     ]
 
     #Calculate VV by CampaignAction?
@@ -100,42 +100,33 @@ class ApiController < ApplicationController
   end
 
   def cpm_by_audience
-    audiences = []
-
+    cpm_by_audience_and_objective = Array.new
+    audiences = Campaign.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
     objectives = Campaign.where(account_id:@account_id_number).pluck('objective').uniq
 
     objectives.each do |objective|
-      impressions = Campaign.where(account_id:@account_id_number, objective: objective).group(:name, :objective).sum(:impressions).map{|k,v| {audience: k[0].split('|')[1].strip, impressions: v}}
-      spend = Campaign.where(account_id:@account_id_number, objective: objective).group(:name, :objective).sum(:spend).map{|k,v| {audience: k[0].split('|')[1].strip, spend: v}}
-      combined_data = impressions + spend
+      objective_data = Hash.new
 
-      audiences.push(objective: objective_name(objective), audiences: combined_data.group_by{|h| h[:audience]}.map{|k,v| v.reduce(:merge)})
-    end
+      objective_data.merge!(objective: objective_name(objective))
 
-    return audiences
-
-    # Pull with CampaignAction
-  end
-
-  def cpr_by_audience
-    raw_data = []
-    audience_name_and_spend = Campaign.where(account_id:@account_id_number).group(:objective, :audience).sum(:spend)
-
-    audience_name_and_spend.each do |data|
-      if data[0][0] == "CONVERSIONS"
-        results = CampaignAction.where(account_id: @account_id_number, objective: 'CONVERSIONS', action_type: "offsite_conversion", audience: data[0][1]).sum(:value)
-      elsif data[0][0] == "LINK_CLICKS"
-        results = CampaignAction.where(account_id: @account_id_number, objective: 'LINK_CLICKS', action_type: "link_click", audience: data[0][1]).sum(:value)
-      elsif data[0][0] == "POST_ENGAGEMENT"
-        results = CampaignAction.where(account_id: @account_id_number, objective: 'POST_ENGAGEMENT', action_type: "post_engagement", audience: data[0][1]).sum(:value)
-      elsif data[0][0] == "VIDEO_VIEWS"
-        results = CampaignAction.where(account_id: @account_id_number, objective: 'VIDEO_VIEWS', action_type: "video_view", audience: data[0][1]).sum(:value)
+      audiences.each do |audience|
+        if check_audience_for_objective(audience, objective) > 0
+          objective_data.merge!(number_with_delimiter(audience, delimiter: ',').to_s.to_sym =>
+                                calculate_cpm(objective, audience))
+        else
+          objective_data.merge!(number_with_delimiter(audience, delimiter: ',').to_s.to_sym =>
+                      nil)
+        end
       end
 
-      raw_data.push(objective: data[0][0], audience: data[0][1], spend: data[1], results:results, cpr: data[1]/results.to_f)
+      cpm_by_audience_and_objective.push(objective_data)
     end
 
-    return raw_data
+    return {data: cpm_by_audience_and_objective, audiences: audiences}
+  end
+
+  def check_audience_for_objective(audience, objective)
+    Campaign.where(account_id: @account_id_number, objective: objective, audience: audience).uniq.count
   end
 
   def age_and_gender
@@ -218,14 +209,13 @@ class ApiController < ApplicationController
   def adset_data
     raw_data = Array.new
 
-    adsets = Adset.where(campaign_id: params['campaign_id'])
+    adsets = Adset.where(account_id: @account_id_number)
 
     adsets.each do |adset|
+      puts adset.attributes
       adset_insight = AdsetInsight.where(adset_id: adset.adset_id)
 
-      results = AdsetInsight.where(adset_id: adset.adset_id, action_type: result_columns(adset.objective)).sum(:value)
-
-      raw_data.push(adsets: {name: adset.name,
+      raw_data.push(adset:  {name: adset.name,
                              adset_id: adset.adset_id,
                              account_id: adset.account_id,
                              campaign_id: adset.campaign_id,
@@ -236,13 +226,15 @@ class ApiController < ApplicationController
                              spend: adset_insight.sum(:spend),
                              frequency: adset_insight.average(:frequency),
                              cpm: adset_insight.sum(:spend)/(adset_insight.sum(:impressions).to_f/1000),
-                             cpr: adset_insight.sum(:spend)/(results)
+                             # cpr: adset_insight.sum(:spend)/(results)
                              })
+
     end
 
-    return raw_data.push(budget_active: Adset.where(campaign_id: params['campaign_id'], status: 'ACTIVE').sum(:daily_budget)/100,
-                         budget_paused: Adset.where(campaign_id: params['campaign_id'], status: 'PAUSED').sum(:daily_budget)/100,
-                         budget_total: Adset.where(campaign_id: params['campaign_id']).sum(:daily_budget)/100)
+    # return raw_data.push(budget_active: Adset.where(campaign_id: params['campaign_id'], status: 'ACTIVE').sum(:daily_budget)/100,
+    #                      budget_paused: Adset.where(campaign_id: params['campaign_id'], status: 'PAUSED').sum(:daily_budget)/100,
+    #                      budget_total: Adset.where(campaign_id: params['campaign_id']).sum(:daily_budget)/100)
+    return raw_data
   end
 
   def ad_formats

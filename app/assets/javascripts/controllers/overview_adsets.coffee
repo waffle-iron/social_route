@@ -16,7 +16,7 @@
         return ''
       decodeURIComponent results[2].replace(/\+/g, ' ')
 
-    OverviewAdset.index(campaign_id: getParameterByName('campaign_id')).$promise
+    OverviewAdsets.index(account_id: getParameterByName('account_id')).$promise
     .then (overviewAdsetData) ->
       # best_campaigns = []
       # best_campaigns_ids = []
@@ -37,4 +37,5 @@
       #       campaign.best = 'no'
 
       $scope.overviewAdsets = overviewAdsetData
+      console.log $scope.overviewAdsets
 ]
