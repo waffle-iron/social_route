@@ -19,6 +19,14 @@ main {
   flex: 1 0 auto;
 }
 
+@media print {
+  .no-print, .no-print * {
+    display: none !important;
+  }
+  @page { margin: 0; }
+  body { margin: 1.6cm; }
+}
+
 .material-icons active {
   position: relative; top: 20px !important;
 }

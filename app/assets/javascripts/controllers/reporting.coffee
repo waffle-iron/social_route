@@ -162,12 +162,11 @@
         legendData.push({type: 'number', label: numberFilter(audience) + ' Audience'})
 
       audiencesChart.data = [legendData]
+
       _.forEach _.sortBy(rawData.data, 'objective'), (objectiveData) ->
           data = [objectiveData.objective]
-
           tooltipData = ''
 
-          console.log _.findKey(objectiveData, objectiveData[Object.keys(objectiveData)[i]])
 
           i = 1
           while i <= audiences.length
@@ -179,8 +178,6 @@
                      "<br></span></p>"
               tooltipData = tooltipData + text
             i++
-
-          console.log tooltipData
 
           tooltipData =
           data.push(
