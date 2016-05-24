@@ -190,11 +190,13 @@ class ReportPdf < Prawn::Document
     page_title('Audience Breakdown')
 
     table(@audiences, row_colors: ['BBDEFB', '90CAF9'],
-                width: bounds.width,
                 cell_style: {size: 11, align: :center, border_color: 'FFFFFF', border_width: 3,  :inline_format => true}) do
       column(0).style :background_color => '56A8D8'
       column(1).style :background_color => '90CAF9'
       column(2).style :background_color => 'BBDEFB'
+      column(0).style :width => 750/3
+      column(1).style :width => 750/3
+      column(2).style :width => 750/3
       row(0).size = 16
       row(0..4).valign = :center
     end

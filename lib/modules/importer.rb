@@ -6,45 +6,38 @@ module Importer
 
   def self.import
     puts "Start Import Rake Task... \n".colorize(:yellow)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Generate Account Data                                            |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Building Account Data                                            |".colorize(:green)
     # build_accounts
-    puts "| Done                                                             |".colorize(:green)
-    puts "| Building Account Insight Data                                    |".colorize(:green)
     # build_account_insights
-    puts "| Done                                                             |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Generate Campaign Data                                           |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Building Campaign Data                                           |".colorize(:green)
     # build_campaigns
-    puts "| Done                                                             |".colorize(:green)
-    puts "| Building Campaign Insight Data                                   |".colorize(:green)
-    build_campaigns_insights
-    # build_campaign_insights_two
-    puts "| Done                                                             |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Generate Ad Set Data                                             |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Building Ad Set Data                                             |".colorize(:green)
-    # build_adsets
-    puts "| Done                                                             |".colorize(:green)
-    puts "| Building Account Insight Data                                    |".colorize(:green)
-    # build_adset_insights
-    puts "| Done                                                             |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Generate Ad Data                                                 |".colorize(:green)
-    puts "--------------------------------------------------------------------".colorize(:green)
-    puts "| Building Ads Data                                                |".colorize(:green)
-    # build_ads
-    puts "| Done                                                             |".colorize(:green)
-    puts "--------------------------------------------------------------------"
-    puts "\nImport sucessfull \n\n".colorize(:yellow)
+    # build_campaigns_insights
+    build_campaign_insights_two
+    # puts "| Done                                                             |".colorize(:green)
+    # puts "--------------------------------------------------------------------".colorize(:green)
+    # puts "| Generate Ad Set Data                                             |".colorize(:green)
+    # puts "--------------------------------------------------------------------".colorize(:green)
+    # puts "| Building Ad Set Data                                             |".colorize(:green)
+    build_adsets
+    # puts "| Done                                                             |".colorize(:green)
+    # puts "| Building Account Insight Data                                    |".colorize(:green)
+    build_adset_insights
+    # puts "| Done                                                             |".colorize(:green)
+    # puts "--------------------------------------------------------------------".colorize(:green)
+    # puts "| Generate Ad Data                                                 |".colorize(:green)
+    # puts "--------------------------------------------------------------------".colorize(:green)
+    # puts "| Building Ads Data                                                |".colorize(:green)
+    build_ads
+    # puts "| Done                                                             |".colorize(:green)
+    # puts "--------------------------------------------------------------------"
+    puts "| Import sucessfull \n\n".colorize(:yellow)
+    puts "----------------------------------------------------".colorize(:green)
   end
 
   def self.build_accounts
+    puts "----------------------------------------------------".colorize(:green)
+    puts "| Generate Account Data                            |".colorize(:green)
+    puts "----------------------------------------------------".colorize(:green)
+    puts "| Building Account Data                            |".colorize(:green)
+
     Account.delete_all
 
     account_columns = ['name', 'account_status', 'amount_spent']
@@ -63,16 +56,19 @@ module Importer
       )
     end
 
-    # Output Account Data
-    puts "Accounts Created: #{Account.count}"
+    puts "| Accounts: #{Account.count}".colorize(:green)
+    puts "| Done".colorize(:green)
   end
 
   def self.build_account_insights
+    puts "---------------------------------------------------|".colorize(:green)
+    puts "| Building Account Insight Data                    |".colorize(:green)
+
     AccountInsight.delete_all
     Action.delete_all
+    AccountPlacement.delete_all
 
     account_ids.each do |account_id|
-      # General Breakdown
       account_insight_columns = ['impressions','spend','actions']
 
       http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
@@ -92,10 +88,6 @@ module Importer
           spend:         account_insight['spend'],
           date:          account_insight['date_start']
         )
-
-
-        # act_1219094488105498/insights?breakdowns=placement&date_preset=lifetime
-
 
         unless account_insight['actions'].nil?
           account_insight['actions'].each do |action|
@@ -136,7 +128,6 @@ module Importer
         end
       end
 
-      # Placement Breakdown
       http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
                                      {:params => {'access_token' => ACCESS_TOKEN,
                                                   'date_preset' => 'lifetime',
@@ -157,17 +148,21 @@ module Importer
       end
     end
 
-    # Output Account Insight and Action Data
-    puts "Account Insights Created: #{AccountInsight.count}"
-    puts "Account Actions Created: #{Action.count}"
+    puts "| Account Insights: #{AccountInsight.count}".colorize(:green)
+    puts "| Account Actions: #{Action.count}".colorize(:green)
+    puts "| Account Placements: #{AccountPlacement.count}".colorize(:green)
+    puts "| Done".colorize(:green)
   end
 
   def self.build_campaigns
+    puts "---------------------------------------------------|".colorize(:green)
+    puts "| Generate Campaign Data                           |".colorize(:green)
+    puts "----------------------------------------------------".colorize(:green)
+    puts "| Building Campaign Data                           |".colorize(:green)
+
     Campaign.delete_all
 
     account_ids.each do |account_id|
-
-      # Set Campaign IDs
       campaign_ids = set_campaign_ids(account_id)
 
       campaign_columns = ['date_start','date_stop','account_id','campaign_id',
@@ -202,16 +197,18 @@ module Importer
       end
     end
 
-    # Output Campaign Data
-    puts "Campaigns Created: #{Campaign.count}"
+    puts "| Campaigns: #{Campaign.count}"
+    puts "| Done                                             |".colorize(:green)
   end
 
   def self.build_campaigns_insights
+    puts "----------------------------------------------------".colorize(:green)
+    puts "| Building Campaign Insight Data                   |".colorize(:green)
+
     CampaignInsight.delete_all
     CampaignAction.delete_all
 
     account_ids.each do |account_id|
-      # Set Campaign IDs
       campaign_ids = set_campaign_ids(account_id)
 
       campaign_insights_columns = ['account_id','actions','campaign_name',
@@ -254,9 +251,9 @@ module Importer
       end
     end
 
-    # Output Campaign Insight and Campaign Action Data
-    puts "Campaign Insights Created: #{CampaignInsight.count}"
-    puts "Campaigns Actions Created: #{CampaignAction.count}"
+    puts "| Campaign Insights: #{CampaignInsight.count}"
+    puts "| Campaigns Actions: #{CampaignAction.count}"
+    puts "| Done                                             |".colorize(:green)
   end
 
   def self.build_campaign_insights_two
@@ -291,6 +288,7 @@ module Importer
 
   def self.build_adsets
     Adset.delete_all
+    AdsetTargeting.delete_all
 
     adset_columns = ['name','adset_id','account_id','campaign_id','status',
                      'daily_budget', 'targeting', 'objective']
@@ -316,7 +314,7 @@ module Importer
           campaign_id:  adset['campaign_id'],
           status:       adset['status'],
           daily_budget: adset['daily_budget'],
-          audience:     adset['name'].split('|')[3].strip,
+          audience:     adset['name'].split('|')[3].strip.gsub(/[\s,]/ ,""),
           targeting:    adset['targeting'],
           objective:    adset['objective']
         )

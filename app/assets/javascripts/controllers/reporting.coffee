@@ -142,7 +142,7 @@
         animation: { startup: true, duration: 1000, easing: 'in' }
         focusTarget: 'category'
         legend: { position: 'bottom'}
-        hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}, gridlines: { count: -1}  }
+        hAxis: { title: 'CPM', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}  }
         vAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'} }
         chartArea: {width: '70%', height: '70%'}
         crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
@@ -222,11 +222,11 @@
         percentage = percentage_raw + '%'
 
         generalChart.data.push([
-          numberFilter(data.audience,0)
+          data.audience
           data.results
           percentage
           {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + numberFilter(data.audience,0) + "</strong></span><br><br>" +
+              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
               "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#0888C4;'>" + numberFilter(data['results']) + "<br></span></p>" +
               "</div>", p: {}
           }
@@ -268,11 +268,11 @@
         percentage = percentage_raw + '%'
 
         generalChartCPM.data.push([
-          numberFilter(data.audience,0)
+          data.audience
           data.cpm
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + numberFilter(data.audience,0) + "</strong></span><br><br>" +
+              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
               "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpm']) + "<br></span></p>" +
               "</div>", p: {}
           }

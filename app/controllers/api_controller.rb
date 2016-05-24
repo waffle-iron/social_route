@@ -372,20 +372,14 @@ class ApiController < ApplicationController
     audience_data = Array.new
     audience_names = Array.new
     audience_ages = Array.new
-    audience_intersts = Array.new
+    audience_interests = Array.new
     audience_cities = Array.new
-    audience_sizes = Array.new
-
-    counter = 1
-
-    # Build Audience Names
-    audiences.length.times do
-      audience_names.push("<b>Audience ##{counter}</b>")
-      counter = counter + 1
-    end
 
     audiences.each do |audience|
       data = AdsetTargeting.where(account_id: @account_id_number, audience: audience).last
+      audience_formatted = number_with_delimiter(audience.round(0), delimiter: ',').to_s
+
+      audience_names.push("<b>#{audience_formatted} Audience</b>")
 
       if data
         age_min = data.age_min
@@ -400,9 +394,9 @@ class ApiController < ApplicationController
         audience_ages.push("People Aged #{age_min}-#{age_max}#{extra}")
 
         if data.interests.length > 0
-          audience_intersts.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
+          audience_interests.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
         else
-          audience_intersts.push('')
+          audience_interests.push('')
         end
 
         if data.cities.length > 0
@@ -410,12 +404,10 @@ class ApiController < ApplicationController
         else
           audience_cities.push('')
         end
-
-        audience_sizes.push("Audience Size: #{audience}")
       end
     end
 
-    audience_data.push(audience_names, audience_ages, audience_intersts, audience_cities, audience_sizes)
+    audience_data.push(audience_names, audience_ages, audience_interests, audience_cities)
 
     return audience_data
   end
