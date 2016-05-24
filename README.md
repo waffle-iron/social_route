@@ -1,5 +1,7 @@
 # The Social Route
 
+[![Throughput Graph](https://graphs.waffle.io/michaelDpierce/social_route/throughput.svg)](https://waffle.io/michaelDpierce/social_route/metrics/throughput)
+
 ## Whitelist Accounts Ids
 - Go to The Social Route FB App
 - Settings
