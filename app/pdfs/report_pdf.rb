@@ -12,7 +12,10 @@ class ReportPdf < Prawn::Document
                  results_by_audience,
                  cpm_by_audience,
                  cpm_by_ad_format,
-                 cpm_by_ad_creative)
+                 ad_creative_count,
+                 cpm_by_ad_creative,
+                 cpm_by_ad_creative_first,
+                 cpm_by_ad_creative_last)
 
     super(page_layout: :landscape, page_size: 'A4', stroke_color: "#56A8D8")
     @account_name = account_name
@@ -30,7 +33,13 @@ class ReportPdf < Prawn::Document
     @cpm_by_audience = cpm_by_audience
 
     @cpm_by_ad_format = cpm_by_ad_format
-    @cpm_by_ad_creative = cpm_by_ad_creative
+
+    if ad_creative_count <= 15
+      @cpm_by_ad_creative = cpm_by_ad_creative
+    else
+      @cpm_by_ad_creative_first = cpm_by_ad_creative_first
+      @cpm_by_ad_creative_last = cpm_by_ad_creative_last
+    end
 
     @results_by_age_and_gender = results_by_age_and_gender
 
@@ -45,7 +54,13 @@ class ReportPdf < Prawn::Document
     results_by_audience_page
     cpm_by_audience_page
     cpm_by_ad_format_page
-    cpm_by_ad_creative_page
+
+    if ad_creative_count <= 15
+      cpm_by_ad_creative_page
+    else
+      cpm_by_ad_creative_first_page
+      cpm_by_ad_creative_last_page
+    end
   end
 
   def cover_page
@@ -54,7 +69,7 @@ class ReportPdf < Prawn::Document
     move_down(140)
     text @dates, size: 20, :color => "767676",:align => :center
     move_down(50)
-    social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
+    social_route_logo = open(Dir.pwd + '/public/the_social_route_logo.png')
     image social_route_logo, :position => :center, :scale => 0.80
   end
 
@@ -189,14 +204,14 @@ class ReportPdf < Prawn::Document
     header
     page_title('Audience Breakdown')
 
-    table(@audiences, row_colors: ['BBDEFB', '90CAF9'],
+    table(@audiences, row_colors: ['BBDEFB', '90CAF9'], width: bounds.width,
                 cell_style: {size: 11, align: :center, border_color: 'FFFFFF', border_width: 3,  :inline_format => true}) do
       column(0).style :background_color => '56A8D8'
       column(1).style :background_color => '90CAF9'
       column(2).style :background_color => 'BBDEFB'
-      column(0).style :width => 750/3
-      column(1).style :width => 750/3
-      column(2).style :width => 750/3
+      # column(0).style :width => 750/3
+      # column(1).style :width => 750/3
+      # column(2).style :width => 750/3
       row(0).size = 16
       row(0..4).valign = :center
     end
@@ -219,10 +234,10 @@ class ReportPdf < Prawn::Document
     page_title('Cost per 1,000 Impressions by Audience & Objective')
 
     chart @cpm_by_audience_and_objective, legend: true,
-                                          formats: [:currency, :currency, :currency, :currency],
+                                          formats: [:currency, :currency, :currency, :currency, :currency, :currency],
                                           baseline: true,
                                           colors: ['022231', '044462', '0888c4', '29b6f6'],
-                                          labels: [true, true, true, true]
+                                          labels: [true, true, true, true, true, true]
     footer(6)
   end
 
@@ -272,6 +287,24 @@ class ReportPdf < Prawn::Document
     footer(11)
   end
 
+  def cpm_by_ad_creative_first_page
+    start_new_page(:size => "A4", :layout => :landscape)
+    header
+    page_title('Cost per 1,000 Impressions by Ad Creative')
+    data = {views: @cpm_by_ad_creative_first}
+    chart data, legend: false, format: :currency, baseline: true, color: '0888C4', label: true
+    footer(11)
+  end
+
+  def cpm_by_ad_creative_last_page
+    start_new_page(:size => "A4", :layout => :landscape)
+    header
+    page_title('Cost per 1,000 Impressions by Ad Creative')
+    data = {views: @cpm_by_ad_creative_last}
+    chart data, legend: false, format: :currency, baseline: true, color: '0888C4', label: true
+    footer(12)
+  end
+
   private
 
   def header
@@ -291,7 +324,7 @@ class ReportPdf < Prawn::Document
   end
 
   def footer(page_number)
-    social_route_logo = open('http://www.thesocialroute.com/wp-content/uploads/2016/02/SocialRoute_WebLogo2.png')
+    social_route_logo = open(Dir.pwd + '/public/the_social_route_logo.png')
     image social_route_logo, :at => [625,15], :scale => 0.50
     draw_text page_number, size: 10, :at => [0,0]
   end

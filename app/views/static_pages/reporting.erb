@@ -204,4 +204,29 @@
       </div>
     </div>
   </div>
+
+  <div class='row' ng-repeat='data in reporting.best_ads'>
+    <div class='col s12 m12'>
+      <div class='card white darken-1'>
+        <div class='card-content grey-text text-darken-1'>
+          <span class='card-title'>Best Ads: {{data.objective}} : {{reporting.date_range}}</span>
+          <br><br>
+          <div class='row'>
+            <div ng-repeat='ad in data.ads'>
+              <div class='col m6 center-align"'>
+                <center>
+                  <b>{{ad.simple_name}}</b><br>
+                  Results: {{ad.results}}<br>
+                  CPR: {{ad.cpr}}<br>
+                  Reach: {{ad.reach}}<br>
+                  Impressions: {{ad.impressions}}<br>
+                  CPM: {{ad.cpm}}
+                </center>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

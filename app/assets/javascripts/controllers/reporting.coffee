@@ -99,7 +99,7 @@
       legendData = [{type: 'string', label: 'Audience'}, {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}]
 
       _.forEach audiences, (audience) ->
-        legendData.push({type: 'number', label: numberFilter(audience) + ' Audience'})
+        legendData.push({type: 'number', label: audience + ' Audience'})
 
       audiencesChart.data = [legendData]
 

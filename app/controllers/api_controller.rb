@@ -10,7 +10,7 @@ class ApiController < ApplicationController
   before_action :require_login
 
   def dashboard
-    render json: Account.where(account_id: ['act_1219094488105498','act_1219094361438844','act_1219093704772243','act_1219093848105562','act_1219093434772270'])
+    render json: Account.all
   end
 
   def overview
@@ -42,17 +42,19 @@ class ApiController < ApplicationController
                          post_engagement: Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
                        }
 
-        render json: {date_range: @dates,
-                      overview: overview_stats,
-                      account_stats: account_stats,
-                      cpm_cpr_placement: cpm_by_placement,
-                      audiences: cpm_by_audience,
-                      demographics: {age_and_gender: age_and_gender,
-                                     audience_breakdowns: audience_demographics},
-                      ad_formats: ad_formats,
-                      ad_data: ad_data,
-                      targeting: targeting
-                    }
+        render json: audience_pdf
+        # render json: {date_range: @dates,
+        #               overview: overview_stats,
+        #               account_stats: account_stats,
+        #               cpm_cpr_placement: cpm_by_placement,
+        #               audiences: cpm_by_audience,
+        #               demographics: {age_and_gender: age_and_gender,
+        #                              audience_breakdowns: audience_demographics},
+        #               ad_formats: ad_formats,
+        #               ad_data: ad_data,
+        #               targeting: targeting,
+        #               best_ads: best_ads
+        #             }
       end
 
       format.pdf { build_pdf }
@@ -84,7 +86,7 @@ class ApiController < ApplicationController
     placements = [{name: 'Desktop News Feed',    placement_columns: ['desktop_feed', 'desktop_video_channel']},
                   {name: 'Mobile News Feed',     placement_columns: ['mobile_feed', 'mobile_video_channel']},
                   {name: 'Desktop Right Column', placement_columns: 'right_hand'},
-                  {name: 'Instragram',           placement_columns: 'instagramstream'},
+                  {name: 'Instagram',            placement_columns: 'instagramstream'},
                   {name: 'Audience Network',     placement_columns: 'mobile_external_only'}]
 
     placements.each do |placement|
@@ -99,8 +101,8 @@ class ApiController < ApplicationController
 
   def cpm_by_audience
     cpm_by_audience_and_objective = Array.new
-    audiences = CampaignInsightTwo.where(account_id: @account_id).order(:audience).pluck('audience').uniq
-    objectives = CampaignInsightTwo.where(account_id: @account_id).pluck('objective').uniq
+    audiences = AdsetTargeting.where(account_id: @account_id).order(:audience).pluck('audience').uniq
+    objectives = Campaign.where(account_id: @account_id_number).pluck('objective').uniq
 
     objectives.each do |objective|
       objective_data = Hash.new
@@ -109,10 +111,10 @@ class ApiController < ApplicationController
 
       audiences.each do |audience|
         if check_audience_for_objective(audience, objective) > 0
-          objective_data.merge!(number_with_delimiter(audience, delimiter: ',').to_s.to_sym =>
+          objective_data.merge!(audience.to_s.to_sym =>
                                 calculate_cpm(objective, audience))
         else
-          objective_data.merge!(number_with_delimiter(audience, delimiter: ',').to_s.to_sym =>
+          objective_data.merge!(audience.to_s.to_sym =>
                       nil)
         end
       end
@@ -146,7 +148,7 @@ class ApiController < ApplicationController
 
   def audience_demographics
     audience_demographics = Array.new
-    audiences = CampaignAction.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
+    audiences = AdsetTargeting.where(account_id: @account_id).order(:audience).pluck('audience').uniq
     columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
     total_results = CampaignAction.where(account_id: @account_id_number, action_type: columns).sum(:value)
     cleaned_audiences = Array.new
@@ -161,9 +163,9 @@ class ApiController < ApplicationController
     end
 
     cleaned_audiences.each do |audience|
-      spend = CampaignInsight.where(account_id: @account_id_number, audience: audience).sum(:spend)
+      spend = Campaign.where(account_id: @account_id_number, audience: audience).sum(:spend)
       results = CampaignAction.where(account_id: @account_id_number, action_type: columns, audience: audience).sum(:value)
-      impressions = CampaignInsight.where(account_id: @account_id_number, audience: audience).sum(:impressions).to_f
+      impressions = Campaign.where(account_id: @account_id_number, audience: audience).sum(:impressions).to_f
 
       audience_demographics.push(audience: number_with_delimiter(audience, delimiter: ','), results: results, cpm: spend/(impressions/1000))
     end
@@ -177,7 +179,7 @@ class ApiController < ApplicationController
 
     objectives.each do |objective|
       campaign_data = Array.new
-      campaigns = CampaignInsight.where(account_id: @account_id_number, objective: objective)
+      campaigns = Campaign.where(account_id: @account_id_number, objective: objective)
 
       campaigns.each do |campaign|
         results = CampaignAction.where(campaign_id: campaign.campaign_id, action_type: result_columns(campaign.objective)).sum(:value)
@@ -206,7 +208,6 @@ class ApiController < ApplicationController
     adsets = Adset.where(account_id: @account_id_number)
 
     adsets.each do |adset|
-      puts adset.attributes
       adset_insight = AdsetInsight.where(adset_id: adset.adset_id)
 
       raw_data.push(adset:  {name: adset.name,
@@ -237,7 +238,7 @@ class ApiController < ApplicationController
     json_data = raw_data.group_by{|h| h[:format]}.map{|k,v| v.reduce(:merge)}
 
     json_data.each do |data|
-      unless data[:format].to_s == '2016' || data[:format].to_s == 'Mislabeled'
+      unless data[:format].to_s == 'VIDEO' || data[:format].to_s == 'Mislabeled'
         final_data.push(format: data[:format], cpm: data[:spend]/(data[:impressions].to_f/1000))
       end
     end
@@ -269,7 +270,7 @@ class ApiController < ApplicationController
 
     audiences.each do |audience|
       ad_target = AdsetTargeting.where(audience: audience, account_id:  @account_id_number).last
-      audience_formatted = number_with_delimiter(audience, delimiter: ',').to_s
+      audience_formatted = audience
 
       if ad_target
 
@@ -292,6 +293,17 @@ class ApiController < ApplicationController
     return target_data
   end
 
+  def best_ads
+    best_ads = Array.new
+    objectives = Ad.where(account_id: @account_id_number).pluck('objective').uniq
+
+    objectives.each do |objective|
+      best_ads.push(objective: objective_name(objective), ads: calculate_best_ads(objective))
+    end
+
+    return best_ads
+  end
+
   def build_pdf
     @account = Account.find_by_account_id(params['account_id'])
     @dates = "#{Date.parse(Action.where(account_id: @account_id).order('date').first.date).strftime("%B %e, %Y")} - #{Date.parse(Action.where(account_id: @account_id).order('date').last.date).strftime("%b %e, %Y")}"
@@ -307,7 +319,10 @@ class ApiController < ApplicationController
                         results_by_audience_pdf,
                         cpm_by_audience_pdf,
                         cpm_by_ad_format_pdf,
-                        cpm_by_ad_creative_pdf)
+                        ad_creative_count_pdf,
+                        cpm_by_ad_creative_pdf,
+                        cpm_by_ad_creative_first_pdf,
+                        cpm_by_ad_creative_last_pdf)
 
     send_data pdf.render, filename: "#{@account.name}.pdf",
                           type: "application/pdf",
@@ -339,7 +354,8 @@ class ApiController < ApplicationController
       campaign_overview.push(['Likes, Comments, & Shares'.upcase, number_with_delimiter(post_engagement.round(0), delimiter: ',') ])
     end
 
-    if video_views > 0
+    # ToDo
+    if video_views > 50
       campaign_overview.push(['Video Views'.upcase, number_with_delimiter(video_views.round(0), delimiter: ',') ])
     end
 
@@ -350,7 +366,7 @@ class ApiController < ApplicationController
     campaign_objectives_overview = [['Campaign Objective', 'Results', 'CPR', 'Reach', 'Impressions', 'CPM']]
 
     overview_stats.each do |objective_data|
-      if objective_data[:results] > 0
+      if objective_data[:results] && objective_data[:results] > 0 && objective_data[:impressions].to_f > 0
         cpr = number_to_currency(objective_data[:spend]/objective_data[:results].to_f)
         cpm = number_to_currency(objective_data[:spend]/(objective_data[:impressions].to_f/1000))
 
@@ -367,8 +383,7 @@ class ApiController < ApplicationController
   end
 
   def audience_pdf
-    audiences = Adset.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
-
+    audiences = AdsetTargeting.where(account_id: @account_id).order(:audience).pluck('audience').uniq
     audience_data = Array.new
     audience_names = Array.new
     audience_ages = Array.new
@@ -376,38 +391,53 @@ class ApiController < ApplicationController
     audience_cities = Array.new
 
     audiences.each do |audience|
-      data = AdsetTargeting.where(account_id: @account_id_number, audience: audience).last
-      audience_formatted = number_with_delimiter(audience.round(0), delimiter: ',').to_s
+      unless audience == 'POST' or audience == 'MULTIAUDIENCE'
+        data = AdsetTargeting.where(account_id: @account_id, audience: audience).last
 
-      audience_names.push("<b>#{audience_formatted} Audience</b>")
-
-      if data
-        age_min = data.age_min
-        age_max = data.age_max
-
-        if age_max >= '65'
-          extra = '+'
+        if is_number?(audience)
+          audience_formatted = number_with_delimiter(audience, delimiter: ',')
         else
-          extra = ''
+          audience_formatted = audience
         end
 
-        audience_ages.push("People Aged #{age_min}-#{age_max}#{extra}")
+        audience_names.push("<b>#{audience_formatted} Audience</b>")
 
-        if data.interests.length > 0
-          audience_interests.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
-        else
-          audience_interests.push('')
-        end
+        if data
+          age_min = data.age_min
+          age_max = data.age_max
 
-        if data.cities.length > 0
-          audience_cities.push('<b>Geolocations</b><br><br>'.concat(data.cities.join("<br>")))
-        else
-          audience_cities.push('')
+          if age_max >= '65'
+            extra = '+'
+          else
+            extra = ''
+          end
+
+          audience_ages.push("People Aged #{age_min}-#{age_max}#{extra}")
+
+          if data.interests.length > 0
+            audience_interests.push('<b>Interests</b><br><br>'.concat(data.interests.join("<br>")))
+          else
+            audience_interests.push('')
+          end
+
+          if data.cities.length > 0
+            audience_cities.push('<b>Geolocations</b><br><br>'.concat(data.cities.join("<br>")))
+          else
+            audience_cities.push('')
+          end
         end
       end
     end
 
-    audience_data.push(audience_names, audience_ages, audience_interests, audience_cities)
+    audience_data.push(audience_names, audience_ages)
+
+    # if audience_interests.length > 0
+    #   audience_data.push(audience_interests)
+    # end
+
+    if audience_cities.length > 0
+      audience_data.push(audience_cities)
+    end
 
     return audience_data
   end
@@ -418,7 +448,7 @@ class ApiController < ApplicationController
 
   def cpm_by_audience_and_objective_pdf
     cpm_by_audience_and_objective = Hash.new
-    audiences = Campaign.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
+    audiences = AdsetTargeting.where(account_id: @account_id).order(:audience).pluck('audience').uniq
 
     objectives = Campaign.where(account_id: @account_id_number).pluck('objective').uniq
 
@@ -471,8 +501,24 @@ class ApiController < ApplicationController
     return ad_formats.map { |data| [data[:format], data[:cpm]]}.to_h
   end
 
+  def ad_creative_count_pdf
+    return ad_data.count
+  end
+
   def cpm_by_ad_creative_pdf
     return ad_data.map { |data| [data[:simple_name], data[:cpm]]}.to_h
+  end
+
+  def cpm_by_ad_creative_first_pdf
+    return ad_data[0..12].map { |data| [data[:simple_name], data[:cpm]]}.to_h
+  end
+
+  def cpm_by_ad_creative_last_pdf
+    if ad_data.length >= 13
+      return ad_data[13..-1].map { |data| [data[:simple_name], data[:cpm]]}.to_h
+    else
+      return nil
+    end
   end
 
   private
@@ -511,13 +557,33 @@ class ApiController < ApplicationController
   end
 
   def calculate_cpm(objective, audience)
-    impressions = CampaignInsightTwo.where(account_id: @account_id, objective: objective, audience: audience).sum(:impressions).to_f
-    spend = CampaignInsightTwo.where(account_id: @account_id, objective: objective, audience: audience).sum(:spend)
+    impressions = Campaign.where(account_id: @account_id_number, objective: objective, audience: audience).sum(:impressions).to_f
+    spend = Campaign.where(account_id: @account_id_number, objective: objective, audience: audience).sum(:spend)
 
     if impressions > 0
       return spend/(impressions/1000)
     else
       return nil
     end
+  end
+
+  def calculate_best_ads(objective)
+    best_ads = Array.new
+    ads = Ad.where(account_id: @account_id_number, objective: objective)
+
+    ads.each do |ad|
+      if ad.impressions.to_i > 2000
+        cpm = ad.spend/(ad.impressions.to_f/1000)
+        score = cpm
+      end
+    end
+
+     best_ads.push(ads[-2..-1])
+
+    return ads.last(2)
+  end
+
+  def is_number? string
+    true if Float(string) rescue false
   end
 end
