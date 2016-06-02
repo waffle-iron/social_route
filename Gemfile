@@ -19,9 +19,15 @@ gem 'colorize'
 gem 'prawn'
 gem 'prawn-table'
 gem 'squid'
-gem 'clearance'
+gem 'devise'
+gem 'omniauth-facebook'
 
 group :development do
   gem 'web-console', '~> 2.0'
   gem 'spring'
+end
+
+group :production do
+  gem 'mysql2', '~> 0.3.20'
+  gem 'rails_12factor'
 end

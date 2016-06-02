@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
+
+  # devise_scope :user do
+  #   delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session, via: 'get'
+  # end
+
   root 'static_pages#dashboard'
 
   match '/dashboard', to: 'static_pages#dashboard', via: 'get'

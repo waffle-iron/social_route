@@ -3,6 +3,8 @@
   <h1>Dashboard</h1>
 </center>
 
+<%= link_to "Sign in with Facebook", user_omniauth_authorize_path(:facebook) %>
+
 <div ng-controller='DashboardCtrl'>
   <div class="nav-wrapper">
     <form>
