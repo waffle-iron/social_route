@@ -18,14 +18,6 @@
               The Social Route
             </a>
             <ul class='right hide-on-med-and-down'>
-              <% if signed_in? %>
-                <li><a href='/dashboard'><i class='material-icons'>dashboard</i></a></li>
-              <% end %>
-              <% if signed_in? %>
-                <li><%= link_to 'SIGN OUT', sign_out_path, method: :delete %></li>
-              <% else %>
-                <li><%= link_to 'SIGN IN', sign_in_path %></li>
-              <% end %>
             </ul>
             <a href='#' data-activates='nav-mobile' class='button-collapse'>
               <i class='material-icons'>menu</i>
