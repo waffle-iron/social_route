@@ -38,7 +38,7 @@ main {
   line-height: 18px;
   float: right;
 }
-#toast-container > div { opacity: 0.9; }
+/*#toast-container > div { opacity: 0.9; }
 .toast-success { background-color: $green-darken-2; }
 .toast-info { background-color: $indigo-accent-2; }
-.toast-error { background-color: $red-darken-1; }
+.toast-error { background-color: $red-darken-1; }*/
