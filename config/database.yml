@@ -12,7 +12,4 @@ test:
   database: db/test.sqlite3
 
 production:
-  adapter: mysql
-  database: rails
-  username: root
-  password: test
+  adapter: mysql2
