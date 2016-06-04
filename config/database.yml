@@ -12,4 +12,4 @@ test:
   database: db/test.sqlite3
 
 production:
-  adapter: mysql2
+  adapter: pg
