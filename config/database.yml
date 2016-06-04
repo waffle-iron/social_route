@@ -12,6 +12,7 @@ test:
   database: db/test.sqlite3
 
 production:
-  adapter: mysql2
+  adapter: mysql
   database: rails
-  encoding: utf8
+  username: root
+  password: test
