@@ -90,6 +90,7 @@ GEM
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
+    mysql2 (0.4.4)
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
     oauth2 (1.1.0)
@@ -108,7 +109,6 @@ GEM
       omniauth (~> 1.2)
     orm_adapter (0.5.0)
     pdf-core (0.6.1)
-    pg (0.18.4)
     prawn (2.1.0)
       pdf-core (~> 0.6.1)
       ttfunk (~> 1.4.0)
@@ -207,8 +207,8 @@ DEPENDENCIES
   jbuilder (~> 2.0)
   jquery-rails
   jquery-turbolinks
+  mysql2 (~> 0.4.4)
   omniauth-facebook
-  pg
   prawn
   prawn-table
   rails (= 4.2.4)
