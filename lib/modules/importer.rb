@@ -355,7 +355,7 @@ module Importer
     # ['act_1139120289436252', 'act_1130403580307923', 'act_1130403223641292']
 
     # Tynan's
-    ['act_1253619597986320', 'act_1219616701386610']
+    # ['act_1253619597986320', 'act_1219616701386610']
   end
 
   def self.set_campaign_ids(account_id)

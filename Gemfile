@@ -2,24 +2,28 @@ source 'https://rubygems.org'
 ruby '2.3.0'
 
 gem 'rails', '4.2.4'
-gem 'angularjs-rails'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
 gem 'jquery-turbolinks'
 gem 'turbolinks'
-gem 'jbuilder', '~> 2.0'
-gem 'sdoc', '~> 0.4.0', group: :doc
-gem 'rest-client'
-gem 'rails-angular-material'
+gem 'clearance'
+
+#JavaScript
+gem 'angularjs-rails'
+
+#Front End
 gem 'toastr-rails'
-gem 'colorize'
+
+#PDF Generation
 gem 'prawn'
 gem 'prawn-table'
 gem 'squid'
-gem 'devise'
-gem 'omniauth-facebook'
+
+#Misc
+gem 'colorize'
+gem 'rest-client'
 
 group :development do
   gem 'sqlite3'

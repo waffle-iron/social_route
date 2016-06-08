@@ -7,6 +7,7 @@ end
 class ApiController < ApplicationController
   include ActionView::Helpers::NumberHelper
   before_action :set_account_params
+  before_action :require_login
 
   def dashboard
     render json: Account.all

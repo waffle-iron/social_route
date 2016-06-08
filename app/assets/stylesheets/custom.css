@@ -31,14 +31,12 @@ main {
   position: relative; top: 20px !important;
 }
 
-#toast-container > .toast { background-image: none !important; padding-left: 25px; }
+#toast-container > .toast { background-image: none !important; padding-left: 50px; }
 #toast-container > .toast:before {
   position: fixed;
   font-size: 24px;
   line-height: 18px;
   float: right;
 }
-/*#toast-container > div { opacity: 0.9; }
-.toast-success { background-color: $green-darken-2; }
-.toast-info { background-color: $indigo-accent-2; }
-.toast-error { background-color: $red-darken-1; }*/
+#toast-container > div { opacity: 0.9; }
+.toast-success { background-color: #4B4F56; }

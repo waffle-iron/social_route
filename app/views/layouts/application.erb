@@ -18,10 +18,21 @@
               The Social Route
             </a>
             <ul class='right hide-on-med-and-down'>
+              <% if signed_in? %>
+                <li>
+                    <%= link_to(profile_path) do %>
+                      <i class="material-icons">person</i>
+                    <% end %>
+                </li>
+                <li>
+                  <%= link_to 'Sign out', sign_out_path, method: :delete %>
+                </li>
+              <% else %>
+                <li>
+                  <%= link_to 'Sign in', sign_in_path %>
+                </li>
+              <% end %>
             </ul>
-            <a href='#' data-activates='nav-mobile' class='button-collapse'>
-              <i class='material-icons'>menu</i>
-            </a>
           </div>
         </nav>
       </header>
@@ -52,4 +63,25 @@
       </footer>
     </div>
   </body>
+
+  <!-- Scripts -->
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '929099250543497',
+        xfbml      : true,
+        version    : 'v2.6',
+        status     : true,
+        cookie     : true
+      });
+    };
+
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  </script>
 </html>
