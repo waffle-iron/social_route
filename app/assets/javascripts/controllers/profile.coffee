@@ -43,15 +43,5 @@
 
     $scope.Logout = ->
       FB.logout (response) ->
-        console.log response
         FB.Auth.setAuthResponse null, 'unknown'
-
-
-
 ]
-
-    # User.get id: id, include: 'position,location,certifications'
-    # .$promise.then (user) ->
-    #   $scope.user = user
-    #   _.each $scope.user.certifications, (cert) ->
-    #     cert.certificationName = _.find(certificationNames, id: cert.certification_name_id)
