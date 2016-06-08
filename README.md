@@ -13,3 +13,7 @@
 -Add wanted account_ids to bottom of import.rb script
 -Run `bundle exec rake db:import`
 
+## Testing with Localhost
+-App Domain: Localhost
+-Canvas URL: http://localhost:3000/
+-OAuth Redirect URL: http://localhost:3000/users/auth/facebook
