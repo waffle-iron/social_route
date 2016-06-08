@@ -20,9 +20,12 @@
             <ul class='right hide-on-med-and-down'>
               <% if signed_in? %>
                 <li>
-                    <%= link_to(profile_path) do %>
-                      <i class="material-icons">person</i>
-                    <% end %>
+                  <%= link_to(dashboard_path) do %>
+                    <i class='material-icons'>view_module</i>
+                  <% end %>
+                  <%= link_to(profile_path) do %>
+                    <i class='material-icons'>person</i>
+                  <% end %>
                 </li>
                 <li>
                   <%= link_to 'Sign out', sign_out_path, method: :delete %>
@@ -50,7 +53,7 @@
               <p class='grey-text text-lighten-4'>
                 If you have any questions please reach out to Michael Pierce<br>
                 <a class='orange-text' href='tel:720-387-9691'>Phone</a> /
-                <a class='orange-text' href='mailto:matchmike1313@gmail.com'>E-Mail</a>
+                <a class='orange-text' href='mailto:michael@thesocialroute.com'>E-Mail</a>
               </p>
             </div>
           </div>

@@ -8,10 +8,10 @@ module Importer
     puts "----------------------------------------------------".colorize(:green)
     puts "Start Import Rake Task... \n".colorize(:yellow)
     build_accounts
-    build_account_insights
-    build_campaigns
-    build_adsets
-    build_ads
+    # build_account_insights
+    # build_campaigns
+    # build_adsets
+    # build_ads
     puts "| Import sucessfull \n\n".colorize(:yellow)
     puts "----------------------------------------------------".colorize(:green)
   end
