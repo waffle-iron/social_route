@@ -155,6 +155,35 @@
           <br><br>
            <div google-chart chart='adDataChart' style='height: 400px;'></div>
         </div>
+
+      </div>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='col s12 m12'>
+      <div class='card white darken-1'>
+        <div class='card-content grey-text text-darken-1'>
+          <span class='card-title'>Best Performing Ad Creative: CUSTOMER
+LOYALTY: {{reporting.date_range}}</span>
+          <br><br>
+          <div class='row' style='padding-left: 50px;'>
+            <div class='col s6'>
+              <div ng-repeat='ad in reporting.ad_data'>
+                <div ng-if="ad.simple_name == 'CUSTOMER LOYALTY'">
+                  <img ng-if="ad.creative.image_url" src="{{ad.creative.image_url}}" alt="Smiley face" height="200">
+                </div>
+              </div>
+            </div>
+            <div class='col s6'>
+              <b>{{ad.simple_name}}</b><br>
+              Results: {{ad.results}}<br>
+              CPR: {{ad.cpr}}<br>
+              Reach: {{ad.reach}}<br>
+              Impressions: {{ad.impressions}}<br>
+              CPM: {{ad.cpm}}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -215,6 +244,12 @@
             <div ng-repeat='ad in data.ads'>
               <div class='col m6 center-align"'>
                 <center>
+                  <div ng-if='ad.creative.image_url'>
+                    <img src="{{ad.creative.image_url}}" alt="Smiley face" height="200">
+                  </div>
+                  <div ng-if='!ad.creative.image_url && ad.creative.thumbnail_url'>
+                    <img src="{{ad.creative.thumbnail_url}}" alt="Smiley face" height="200">
+                  </div>
                   <b>{{ad.simple_name}}</b><br>
                   Results: {{ad.results}}<br>
                   CPR: {{ad.cpr}}<br>
