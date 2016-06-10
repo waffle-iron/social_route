@@ -7,14 +7,19 @@ module Importer
   def self.import
     puts "----------------------------------------------------".colorize(:green)
     puts "Start Import Rake Task... \n".colorize(:yellow)
-    build_accounts
-    # build_account_insights
-    # build_campaigns
-    # build_adsets
-    # build_ads
+    # build_accounts
+    build_account_insights
+    build_campaigns
+    build_adsets
+    build_ads
     puts "| Import sucessfull \n\n".colorize(:yellow)
     puts "----------------------------------------------------".colorize(:green)
   end
+
+  #
+  # Ad_ID/previews?ad_format=DESKTOP_FEED_STANDARD
+  # For previews
+  # RIGHT_COLUMN_STANDARD, DESKTOP_FEED_STANDARD, MOBILE_FEED_STANDARD, MOBILE_FEED_BASIC, MOBILE_INTERSTITIAL, MOBILE_BANNER, MOBILE_MEDIUM_RECTANGLE, MOBILE_NATIVE, INSTAGRAM_STANDARD, AUDIENCE_NETWORK_OUTSTREAM_VIDEO
 
   def self.build_accounts
     puts "----------------------------------------------------".colorize(:green)
