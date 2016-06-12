@@ -247,7 +247,9 @@ class ApiController < ApplicationController
 
     json_data.each do |data|
       unless data[:format].to_s == 'VIDEO' || data[:format].to_s == 'Mislabeled'
-        final_data.push(format: data[:format], cpm: data[:spend]/(data[:impressions].to_f/1000))
+        final_data.push(format: data[:format],
+                        cpm: data[:spend]/(data[:impressions].to_f/1000),
+                        creative: Ad.where(account_id: @account_id_number, format: data[:format]))
       end
     end
 
@@ -265,7 +267,15 @@ class ApiController < ApplicationController
 
     json_data.each do |data|
       unless data[:simple_name].to_s == '2016' || data[:simple_name].to_s == 'Mislabeled'
-        final_data.push(simple_name: data[:simple_name], cpm: data[:spend]/(data[:impressions].to_f/1000))
+        ad = Ad.where(account_id: @account_id_number, simple_name: data[:simple_name]).first
+
+        ad_creative = AdCreativeLookup.find_by_ad_id(ad.ad_id)
+        creative = AdAccountCreative.find_by_creative_id(ad_creative.creative_id)
+
+        final_data.push(simple_name: data[:simple_name],
+                        cpm: data[:spend]/(data[:impressions].to_f/1000),
+                        creative: creative
+                       )
       end
     end
 
@@ -330,7 +340,8 @@ class ApiController < ApplicationController
                         ad_creative_count_pdf,
                         cpm_by_ad_creative_pdf,
                         cpm_by_ad_creative_first_pdf,
-                        cpm_by_ad_creative_last_pdf)
+                        cpm_by_ad_creative_last_pdf,
+                        best_ad_creative_pdf)
 
     send_data pdf.render, filename: "#{@account.name}.pdf",
                           type: "application/pdf",
@@ -529,6 +540,9 @@ class ApiController < ApplicationController
     end
   end
 
+  def best_ad_creative_pdf
+  end
+
   private
 
   def set_account_params
@@ -579,16 +593,21 @@ class ApiController < ApplicationController
     best_ads = Array.new
     ads = Ad.where(account_id: @account_id_number, objective: objective)
 
-    ads.each do |ad|
-      if ad.impressions.to_i > 2000
-        cpm = ad.spend/(ad.impressions.to_f/1000)
-        score = cpm
-      end
+    ads[-2..-1].each do |ad|
+      ad_creative = AdCreativeLookup.find_by_ad_id(ad.ad_id)
+      creative = AdAccountCreative.find_by_creative_id(ad_creative.creative_id)
+
+      best_ads.push({
+        results: 1,
+        cpr: 1,
+        reach: ad.reach,
+        impressions: ad.impressions,
+        cpm: ad.spend/(ad.impressions.to_f/1000),
+        creative: creative
+      })
     end
 
-     best_ads.push(ads[-2..-1])
-
-    return ads.last(2)
+    return best_ads
   end
 
   def is_number? string

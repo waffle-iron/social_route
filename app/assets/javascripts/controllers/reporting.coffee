@@ -3,15 +3,15 @@
   'Reporting'
   '$filter'
   '$window'
+  '$http'
 
-  @DashboardCtrl = ($scope, Reporting, $filter, $window) ->
+  @DashboardCtrl = ($scope, Reporting, $filter, $window, $http) ->
     numberFilter = $filter('number')
     currencyFilter = $filter('currency')
 
-
     $scope.generateReport = (account_id)=>
         $window.open('/api/reporting.pdf?account_id=' + getParameterByName('account_id')
-                     , '_blank')
+                     ,'_blank')
 
     getParameterByName = (name) ->
       url = window.location.href

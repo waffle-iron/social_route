@@ -7,11 +7,13 @@ module Importer
   def self.import
     puts "----------------------------------------------------".colorize(:green)
     puts "Start Import Rake Task... \n".colorize(:yellow)
-    # build_accounts
-    # build_account_insights
-    # build_campaigns
+    build_accounts
+    build_account_insights
+    build_account_creatives
+    build_ad_creative_lookup
+    build_campaigns
     build_adsets
-    # build_ads
+    build_ads
     puts "----------------------------------------------------".colorize(:green)
     puts "\n\nImport sucessfull".colorize(:yellow)
   end
@@ -141,6 +143,73 @@ module Importer
     puts "| Account Insights: #{AccountInsight.count}".colorize(:green)
     puts "| Account Actions: #{Action.count}".colorize(:green)
     puts "| Account Placements: #{AccountPlacement.count}".colorize(:green)
+    puts "| Done".colorize(:green)
+  end
+
+  def self.build_account_creatives
+    puts "---------------------------------------------------|".colorize(:green)
+    puts "| Building Account Creative Data                   |".colorize(:green)
+
+    ad_account_creatives = Array.new
+
+    account_ids.each do |account_id|
+      account_creative_fields = ['image_url', 'thumbnail_url']
+
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/adcreatives",
+                                     {:params => {'access_token' => ACCESS_TOKEN,
+                                                  'date_preset' => 'lifetime',
+                                                  'limit' => 1000,
+                                                  'fields' => account_creative_fields
+                                                  }}
+
+      raw_data = JSON.parse(http_response)['data']
+
+      raw_data.each do |account_creative|
+        ad_account_creatives.push({creative_id:   account_creative['id'],
+                                   image_url:     account_creative['image_url'],
+                                   thumbnail_url: account_creative['thumbnail_url']})
+      end
+    end
+
+    AdAccountCreative.transaction do
+      AdAccountCreative.delete_all
+      AdAccountCreative.create!(ad_account_creatives)
+    end
+
+    puts "| Account Creatives: #{AdAccountCreative.count}".colorize(:green)
+    puts "| Done".colorize(:green)
+  end
+
+  def self.build_ad_creative_lookup
+    puts "---------------------------------------------------|".colorize(:green)
+    puts "| Building Account Creative Lookup Data            |".colorize(:green)
+
+    ad_creative_lookups = Array.new
+
+    account_ids.each do |account_id|
+      ad_creative_lookup_fields = ['creative']
+
+      http_response = RestClient.get "#{BASE_URL}/#{account_id}/ads",
+                                     {:params => {'access_token' => ACCESS_TOKEN,
+                                                  'date_preset' => 'lifetime',
+                                                  'limit' => 1000,
+                                                  'fields' => ad_creative_lookup_fields
+                                                  }}
+
+      raw_data = JSON.parse(http_response)['data']
+
+      raw_data.each do |ad_creative_lookup|
+        ad_creative_lookups.push({creative_id:  ad_creative_lookup['creative']['id'],
+                                  ad_id:        ad_creative_lookup['id']})
+      end
+    end
+
+    AdCreativeLookup.transaction do
+      AdCreativeLookup.delete_all
+      AdCreativeLookup.create!(ad_creative_lookups)
+    end
+
+    puts "| Account Creative Lookups Created: #{AdCreativeLookup.count}".colorize(:green)
     puts "| Done".colorize(:green)
   end
 

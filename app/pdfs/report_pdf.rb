@@ -15,7 +15,8 @@ class ReportPdf < Prawn::Document
                  ad_creative_count,
                  cpm_by_ad_creative,
                  cpm_by_ad_creative_first,
-                 cpm_by_ad_creative_last)
+                 cpm_by_ad_creative_last,
+                 best_ad_creative)
 
     super(page_layout: :landscape, page_size: 'A4', stroke_color: "#56A8D8")
     @account_name = account_name
@@ -43,6 +44,8 @@ class ReportPdf < Prawn::Document
 
     @results_by_age_and_gender = results_by_age_and_gender
 
+    @best_ad_creative = best_ad_creative
+
     cover_page
     outline_page
     campaign_overview_page
@@ -61,6 +64,11 @@ class ReportPdf < Prawn::Document
       cpm_by_ad_creative_first_page
       cpm_by_ad_creative_last_page
     end
+
+    best_ad_creative_page
+
+    best_ad_objective_page_page('Clicks to Website', 14)
+
   end
 
   def cover_page
@@ -205,7 +213,7 @@ class ReportPdf < Prawn::Document
     page_title('Audience Breakdown')
 
     table(@audiences, row_colors: ['BBDEFB', '90CAF9'], width: bounds.width,
-                cell_style: {size: 11, align: :center, border_color: 'FFFFFF', border_width: 3,  :inline_format => true}) do
+                cell_style: {size: 11, align: :center, border_color: 'FFFFFF', border_width: 3, :inline_format => true}) do
       column(0).style :background_color => '56A8D8'
       column(1).style :background_color => '90CAF9'
       column(2).style :background_color => 'BBDEFB'
@@ -305,6 +313,53 @@ class ReportPdf < Prawn::Document
     footer(12)
   end
 
+  def best_ad_creative_page
+    start_new_page(:size => "A4", :layout => :landscape)
+    header
+    page_title('Best Performing Ad Creative')
+    best_ad_creative = open('https://scontent.xx.fbcdn.net/t45.1600-4/12532508_6038040605603_1149475459_n.png')
+    image best_ad_creative, :position => :center, :scale => 0.25
+    move_down(15)
+    text 'Results:', size: 16, :color => "767676",:align => :center, :style => :bold
+    text 'CPR:', size: 16, :color => "767676",:align => :center, :style => :bold
+    text 'Reach:', size: 16, :color => "767676",:align => :center, :style => :bold
+    text 'Impressions:', size: 16, :color => "767676",:align => :center, :style => :bold
+    text 'CPM:', size: 16, :color => "767676",:align => :center, :style => :bold
+
+    footer(13)
+  end
+
+  def best_ad_objective_page_page(objective, page_number)
+    start_new_page(:size => "A4", :layout => :landscape)
+    header
+    page_title('Best Ads: ' + objective)
+
+    best_ad_creative = open('https://scontent.xx.fbcdn.net/t45.1600-4/12520984_6037297918403_260990834_n.png')
+    best_ad_creative_two = open('https://scontent.xx.fbcdn.net/t45.1600-4/12520993_6037295740003_2076943172_n.png')
+
+    # table_data = [[image best_ad_creative, :position => :center, :scale => 0.25, image best_ad_creative, :position => :center, :scale => 0.25]]
+
+
+    image = best_ad_creative
+    image_two = best_ad_creative_two
+
+    table [
+     [{:image => image, :position => :center, :vposition => :center, :scale => 0.25}, {:image => image_two, :position => :center, :vposition => :center, :scale => 0.25}],
+     ['<b>Results</b><br><b>CPR:</b>:<br><b>Reach:</b><br><b>Impressions:</b><br><b>CPM:</b><br>',
+      '<b>Results</b><br><b>CPR:</b>:<br><b>Reach:</b><br><b>Impressions:</b><br><b>CPM:</b><br>']
+    ], :width => bounds.width, cell_style: {size: 11, align: :center, border_color: 'FFFFFF', border_width: 3, :inline_format => true}
+
+    move_down(15)
+
+    # text 'Results:', size: 16, :color => "767676",:align => :center, :style => :bold
+    # text 'CPR:', size: 16, :color => "767676",:align => :center, :style => :bold
+    # text 'Reach:', size: 16, :color => "767676",:align => :center, :style => :bold
+    # text 'Impressions:', size: 16, :color => "767676",:align => :center, :style => :bold
+    # text 'CPM:', size: 16, :color => "767676",:align => :center, :style => :bold
+
+    footer(page_number)
+  end
+
   private
 
   def header
@@ -313,8 +368,9 @@ class ReportPdf < Prawn::Document
        :styles => [:bold, :italic],
        :at => [40,500],
        :size => 20,
-      :color => "767676"
-     }])
+       :color => "767676"
+      }
+    ])
   end
 
   def page_title(title)
