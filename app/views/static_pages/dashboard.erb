@@ -1,35 +1,44 @@
-<% provide(:title, "Dashboard") %>
+<% provide(:title, 'Dashboard') %>
 <center>
   <h1>Dashboard</h1>
 </center>
 
 <div ng-controller='DashboardCtrl'>
-  <div class="nav-wrapper">
+  <div class='nav-wrapper'>
     <form>
-      <div class="input-field">
-        <input id="search" type="search" ng-model='query' required>
-        <label for="search"></label>
+      <div class='input-field'>
+        <input id='search' type='search' ng-model='query' required>
+        <label for='search'></label>
       </div>
     </form>
   </div>
-  <div class="row">
-    <div class="col s6"
+  <div class='row'>
+    <div class='col s6'
          ng-repeat="account in filteredAccounts = (accounts
                                                    | orderBy: 'name'
                                                    | filter:query)">
-      <div class="card white">
-        <div class="card-content grey-text">
-          <span class="card-title grey-text text-darken-1">{{account.name}}</span>
+      <div class='card white'>
+        <div class='card-content grey-text'>
+          <span class='card-title grey-text text-darken-1'>{{account.name}}</span>
           <p>
-            Status: {{account.statusCodeValue}}
+            Status: <span class='green-text text-darken-2'>{{account.statusCodeValue}}</span>
             <br>
-            Spend: <span class="green-text text-darken-2">{{account.amount_spent/100 | currency:"$":0}}</span>
+            Lifetime Spend: <span class='green-text text-darken-2'>{{account.amount_spent/100 | currency:'$':0}}</span>
           </p>
         </div>
-        <div class="card-action">
+        <div class='card-action'>
           <!-- <a style='cursor: pointer;' href="/overview?account_id={{account.account_id}}">Campaign Overview</a><br>
           <a style='cursor: pointer;' href="/overview/adsets?account_id={{account.account_id}}">Adset Overview</a><br> -->
-          <a style='cursor: pointer;' href="/reporting?account_id={{account.account_id}}">Reporting</a>
+
+          <span ng-if='account.amount_spent == 0'
+                class='grey-text text-darken-1'>
+            No Reporting Available
+          </span>
+          <span ng-if='account.amount_spent > 0'>
+            <a style='cursor: pointer;' href="/reporting?account_id={{account.account_id}}">
+              Reporting
+            </a>
+          </span>
         </div>
       </div>
     </div>
@@ -38,7 +47,7 @@
     <br>
     <center>
       <p class='grey-text'>
-        No Ad-Accounts found
+        No Ad Accounts found
       </p>
     </center>
   </div>

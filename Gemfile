@@ -10,6 +10,7 @@ gem 'jquery-turbolinks'
 gem 'turbolinks'
 gem 'clearance'
 
+
 #JavaScript
 gem 'angularjs-rails'
 
@@ -20,6 +21,9 @@ gem 'toastr-rails'
 gem 'prawn'
 gem 'prawn-table'
 gem 'squid'
+
+#Mass Import
+gem 'activerecord-import', '0.13.0'
 
 #Misc
 gem 'colorize'

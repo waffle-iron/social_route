@@ -8,41 +8,38 @@ module Importer
     puts "----------------------------------------------------".colorize(:green)
     puts "Start Import Rake Task... \n".colorize(:yellow)
     # build_accounts
-    build_account_insights
-    build_campaigns
+    # build_account_insights
+    # build_campaigns
     build_adsets
-    build_ads
-    puts "| Import sucessfull \n\n".colorize(:yellow)
+    # build_ads
     puts "----------------------------------------------------".colorize(:green)
+    puts "\n\nImport sucessfull".colorize(:yellow)
   end
-
-  #
-  # Ad_ID/previews?ad_format=DESKTOP_FEED_STANDARD
-  # For previews
-  # RIGHT_COLUMN_STANDARD, DESKTOP_FEED_STANDARD, MOBILE_FEED_STANDARD, MOBILE_FEED_BASIC, MOBILE_INTERSTITIAL, MOBILE_BANNER, MOBILE_MEDIUM_RECTANGLE, MOBILE_NATIVE, INSTAGRAM_STANDARD, AUDIENCE_NETWORK_OUTSTREAM_VIDEO
 
   def self.build_accounts
     puts "----------------------------------------------------".colorize(:green)
-    puts "| Generate Account Data                            |".colorize(:green)
-    puts "----------------------------------------------------".colorize(:green)
     puts "| Building Account Data                            |".colorize(:green)
-
-    Account.delete_all
 
     account_columns = ['name', 'account_status', 'amount_spent']
 
     http_response = RestClient.get "#{BASE_URL}/me/adaccounts",
                                    {:params => {'access_token' => ACCESS_TOKEN,
-                                                'fields' => account_columns}}
+                                                'fields' => account_columns,
+                                                'limit' => 1000}}
     raw_data = JSON.parse(http_response)['data']
 
+    account_data = Array.new
+
     raw_data.each do |account|
-      Account.create(
-        account_id:     account['id'],
-        account_status: account['account_status'],
-        amount_spent:   account['amount_spent'],
-        name:           account['name']
-      )
+      account_data.push({account_id:     account['id'],
+                         account_status: account['account_status'],
+                         amount_spent:   account['amount_spent'],
+                         name:           account['name']})
+    end
+
+    Account.transaction do
+      Account.delete_all
+      Account.create!(account_data)
     end
 
     puts "| Accounts: #{Account.count}".colorize(:green)
@@ -53,12 +50,12 @@ module Importer
     puts "---------------------------------------------------|".colorize(:green)
     puts "| Building Account Insight Data                    |".colorize(:green)
 
-    AccountInsight.delete_all
-    Action.delete_all
-    AccountPlacement.delete_all
+    account_insights = Array.new
+    account_actions = Array.new
+    account_placements = Array.new
 
     account_ids.each do |account_id|
-      account_insight_columns = ['impressions','spend','actions']
+      account_insight_columns = ['impressions','actions']
 
       http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
                                      {:params => {'access_token' => ACCESS_TOKEN,
@@ -70,22 +67,17 @@ module Importer
 
       raw_data = JSON.parse(http_response)['data']
 
+
       raw_data.each do |account_insight|
-        AccountInsight.create(
-          account_id:    account_id,
-          impressions:   account_insight['impressions'],
-          spend:         account_insight['spend'],
-          date:          account_insight['date_start']
-        )
+        account_insights.push({account_id:  account_id,
+                               impressions: account_insight['impressions']})
 
         unless account_insight['actions'].nil?
           account_insight['actions'].each do |action|
-            Action.create(
-              action_type: action['action_type'],
-              value:       action['value'],
-              date:        account_insight['date_start'],
-              account_id:  account_id
-            )
+            account_actions.push({action_type: action['action_type'],
+                                  value:       action['value'],
+                                  date:        account_insight['date_start'],
+                                  account_id:  account_id})
           end
         end
       end
@@ -96,22 +88,19 @@ module Importer
                                                   'time_increment' => 1,
                                                   'limit' => 1000,
                                                   'breakdowns' => ['age', 'gender'],
-                                                  'fields' => account_insight_columns
-                                                  }}
+                                                  'fields' => account_insight_columns}}
 
       raw_data = JSON.parse(http_response)['data']
 
       raw_data.each do |account_insight|
         unless account_insight['actions'].nil?
           account_insight['actions'].each do |action|
-            Action.create(
-              action_type: action['action_type'],
-              value: action['value'],
-              date: account_insight['date_start'],
-              account_id: account_id,
-              age: account_insight['age'],
-              gender:  account_insight['gender']
-            )
+            account_actions.push({action_type: action['action_type'],
+                                  value:       action['value'],
+                                  date:        account_insight['date_start'],
+                                  account_id:  account_id,
+                                  age:         account_insight['age'],
+                                  gender:      account_insight['gender']})
           end
         end
       end
@@ -120,21 +109,33 @@ module Importer
                                      {:params => {'access_token' => ACCESS_TOKEN,
                                                   'date_preset' => 'lifetime',
                                                   'breakdowns' => ['placement'],
-                                                  'limit' => 1000
-                                                  }}
+                                                  'limit' => 1000}}
 
       raw_data = JSON.parse(http_response)['data']
 
       raw_data.each do |account_placement|
-        AccountPlacement.create(
-          date_start:  account_placement['date_start'],
-          date_stop:   account_placement['date_stop'],
-          account_id:  account_placement['account_id'],
-          impressions: account_placement['impressions'],
-          spend:       account_placement['spend'],
-          placement:   account_placement['placement']
-        )
+        account_placements.push({date_start:  account_placement['date_start'],
+                                 date_stop:   account_placement['date_stop'],
+                                 account_id:  account_placement['account_id'],
+                                 impressions: account_placement['impressions'],
+                                 spend:       account_placement['spend'],
+                                 placement:   account_placement['placement']})
       end
+    end
+
+    AccountInsight.transaction do
+      AccountInsight.delete_all
+      AccountInsight.create!(account_insights)
+    end
+
+    Action.transaction do
+      Action.delete_all
+      Action.create!(account_actions)
+    end
+
+    AccountPlacement.transaction do
+      AccountPlacement.delete_all
+      AccountPlacement.create!(account_placements)
     end
 
     puts "| Account Insights: #{AccountInsight.count}".colorize(:green)
@@ -148,8 +149,8 @@ module Importer
     puts "----------------------------------------------------".colorize(:green)
     puts "| Building Campaign Data                           |".colorize(:green)
 
-    Campaign.delete_all
-    CampaignAction.delete_all
+    campaigns = Array.new
+    campaign_actions = Array.new
 
     account_ids.each do |account_id|
       campaign_columns = ['date_start','date_stop','account_id','campaign_id',
@@ -171,38 +172,44 @@ module Importer
         if total_bars > 0
           audience = campaign['campaign_name'].split('|')[1].strip.gsub(/[\s,]/ ,"")
         else
-          audience = "POST"
+          audience = 'POST'
         end
 
-        Campaign.create(
-          date_start:    campaign['date_start'],
-          date_stop:     campaign['date_stop'],
-          account_id:    campaign['account_id'],
-          campaign_id:   campaign['campaign_id'],
-          campaign_name: campaign['campaign_name'],
-          objective:     campaign['objective'],
-          impressions:   campaign['impressions'],
-          spend:         campaign['spend'],
-          frequency:     campaign['frequency'],
-          reach:         campaign['reach'],
-          cpm:           campaign['cpm'],
-          audience:      audience
-        )
+        campaigns.push({date_start:    campaign['date_start'],
+                        date_stop:     campaign['date_stop'],
+                        account_id:    campaign['account_id'],
+                        campaign_id:   campaign['campaign_id'],
+                        campaign_name: campaign['campaign_name'],
+                        objective:     campaign['objective'],
+                        impressions:   campaign['impressions'],
+                        spend:         campaign['spend'],
+                        frequency:     campaign['frequency'],
+                        reach:         campaign['reach'],
+                        cpm:           campaign['cpm'],
+                        audience:      audience})
 
         unless campaign['actions'].nil?
           campaign['actions'].each do |action|
-            CampaignAction.create(
-              action_type:   action['action_type'],
-              value:         action['value'],
-              account_id:    campaign['account_id'],
-              campaign_id:   campaign['campaign_id'],
-              campaign_name: campaign['campaign_name'],
-              objective:     campaign['objective'],
-              audience:      audience
-            )
+            campaign_actions.push({action_type:   action['action_type'],
+                                   value:         action['value'],
+                                   account_id:    campaign['account_id'],
+                                   campaign_id:   campaign['campaign_id'],
+                                   campaign_name: campaign['campaign_name'],
+                                   objective:     campaign['objective'],
+                                   audience:      audience})
           end
         end
       end
+    end
+
+    Campaign.transaction do
+      Campaign.delete_all
+      Campaign.create!(campaigns)
+    end
+
+    CampaignAction.transaction do
+      CampaignAction.delete_all
+      CampaignAction.create!(campaign_actions)
     end
 
     puts "| Campaigns: #{Campaign.count}"
@@ -211,9 +218,8 @@ module Importer
   end
 
   def self.build_adsets
-    Adset.delete_all
-    AdsetTargeting.delete_all
-
+    adsets = Array.new
+    adset_targetings = Array.new
     adset_columns = ['name','campaign_id','daily_budget','targeting','status']
 
     account_ids.each do |account_id|
@@ -231,22 +237,20 @@ module Importer
 
         total_bars = bar_count(adset['name'])
 
-        if total_bars > 0
+        if total_bars > 3
           audience = adset['name'].split('|')[3].strip.gsub(/[\s,]/ ,"")
         else
           audience = "POST"
         end
 
-        Adset.create(
-          name:         adset['name'],
-          adset_id:     adset['id'],
-          account_id:   account_id,
-          campaign_id:  adset['campaign_id'],
-          status:       adset['status'],
-          daily_budget: adset['daily_budget'],
-          audience:     audience,
-          targeting:    adset['targeting']
-        )
+        adsets.push({name:         adset['name'],
+                     adset_id:     adset['id'],
+                     account_id:   account_id,
+                     campaign_id:  adset['campaign_id'],
+                     status:       adset['status'],
+                     daily_budget: adset['daily_budget'],
+                     audience:     audience,
+                     targeting:    adset['targeting']})
 
         if adset['targeting']
           if adset['targeting']['flexible_spec']
@@ -270,17 +274,27 @@ module Importer
           end
         end
 
-        AdsetTargeting.create(
-          age_min: adset['targeting']['age_min'],
-          age_max: adset['targeting']['age_max'],
-          account_id: account_id,
-          campaign_id: adset['campaign_id'],
-          adset_id: adset['id'],
-          audience: audience,
-          interests: interests,
-          cities: cities
-        )
+        if adset['targeting']
+          adset_targetings.push({age_min: adset['targeting']['age_min'],
+                                 age_max: adset['targeting']['age_max'],
+                                 account_id: account_id,
+                                 campaign_id: adset['campaign_id'],
+                                 adset_id: adset['id'],
+                                 audience: audience,
+                                 interests: interests,
+                                 cities: cities})
+        end
       end
+    end
+
+    Adset.transaction do
+      Adset.delete_all
+      Adset.create!(adsets)
+    end
+
+    AdsetTargeting.transaction do
+      AdsetTargeting.delete_all
+      AdsetTargeting.create!(adset_targetings)
     end
 
     puts "Adsets Created: #{Adset.count}"
@@ -288,7 +302,7 @@ module Importer
   end
 
   def self.build_ads
-    Ad.delete_all
+    ads = Array.new
 
     ad_columns = ['account_id','ad_id','ad_name','campaign_id','objective',
                   'impressions','spend','frequency','reach',
@@ -327,24 +341,27 @@ module Importer
           audience = "POST"
         end
 
-        Ad.create(
-          account_id:    ad['account_id'],
-          ad_id:         ad['ad_id'],
-          adset_id:      ad['adset_id'],
-          ad_name:       ad['ad_name'],
-          simple_name:   simple_name,
-          campaign_id:   ad['campaign_id'],
-          campaign_name: ad['campaign_name'],
-          objective:     ad['objective'],
-          impressions:   ad['impressions'],
-          spend:         ad['spend'],
-          frequency:     ad['frequency'],
-          reach:         ad['reach'],
-          audience:      audience,
-          format:        format,
-          edition:       edition
-        )
+        ads.push({account_id:    ad['account_id'],
+                  ad_id:         ad['ad_id'],
+                  adset_id:      ad['adset_id'],
+                  ad_name:       ad['ad_name'],
+                  simple_name:   simple_name,
+                  campaign_id:   ad['campaign_id'],
+                  campaign_name: ad['campaign_name'],
+                  objective:     ad['objective'],
+                  impressions:   ad['impressions'],
+                  spend:         ad['spend'],
+                  frequency:     ad['frequency'],
+                  reach:         ad['reach'],
+                  audience:      audience,
+                  format:        format,
+                  edition:       edition})
       end
+    end
+
+    Ad.transaction do
+      Ad.delete_all
+      Ad.create!(ads)
     end
 
     puts "Ads Created: #{Ad.count}"
@@ -360,24 +377,19 @@ module Importer
     # ['act_1139120289436252', 'act_1130403580307923', 'act_1130403223641292']
 
     # Tynan's
-    ['act_1253619597986320', 'act_1219616701386610']
-  end
+    # ['act_1253619597986320', 'act_1219616701386610']
 
-  def self.set_campaign_ids(account_id)
-    campaign_ids = []
+    # Top 25
+    ['act_1219094644772149', 'act_1219093434772270', 'act_1219094751438805',
+     'act_1219094488105498', 'act_1219616701386610', 'act_1130403580307923',
+     'act_1139120289436252', 'act_1130403223641292', 'act_1253619597986320',
+     'act_1264926836855596', 'act_1374748469467327', 'act_937799526234997',
+     'act_1382151058724804', 'act_1382716158668218', 'act_1096482140366734',
+     'act_1382519912021865', 'act_923549197660030', 'act_256023237923821',
+     'act_1033441906670758', 'act_965932350088381', 'act_1380511028896841',
+     'act_1219093704772243', 'act_1219094968105450', 'act_944470208901262',
+     'act_331941523628320']
 
-    http_response = RestClient.get "#{BASE_URL}/#{account_id}/campaigns",
-                                    {:params => {'access_token' => ACCESS_TOKEN,
-                                                 'date_preset' => 'lifetime',
-                                                 'limit' => 1000}}
-
-    raw_data = JSON.parse(http_response)['data']
-
-    raw_data.each do |data|
-      campaign_ids.push(data)
-    end
-
-    return campaign_ids
   end
 
   def self.bar_count(string)
