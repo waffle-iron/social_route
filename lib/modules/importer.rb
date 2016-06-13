@@ -1,26 +1,32 @@
 module Importer
   require 'rest-client'
+  require 'activerecord-import/base'
+
+  ActiveRecord::Import.require_adapter('mysql2')
 
   BASE_URL = 'https://graph.facebook.com/v2.6/'
   ACCESS_TOKEN = 'EAANNAsbKK4kBACpwFhVmwa7towVzr1plzrFYA7NxwGG5UZB2Qa7uXZBUzduKLT7GdtGYkODGZCG0Uz6hAYW6rw12XAd0k5T9N9L5ldOft6ZB0WtFOAZBi60euPVVXvEXJ7LoTBwe2ihPWOhJ5x7jYZA7ftHTHNw8kZD'
 
   def self.import
-    puts "----------------------------------------------------".colorize(:green)
+    start = Time.now
+    puts start.to_s.colorize(:yellow)
+    puts "----------------------------------------------------".colorize(:yellow)
     puts "Start Import Rake Task... \n".colorize(:yellow)
-    build_accounts
-    build_account_insights
-    build_account_creatives
-    build_ad_creative_lookup
+    # build_accounts
+    # build_account_insights
+    # build_account_creatives
+    # build_ad_creative_lookup
     build_campaigns
-    build_adsets
-    build_ads
-    puts "----------------------------------------------------".colorize(:green)
+    # build_adsets
+    # build_ads
+    puts "----------------------------------------------------".colorize(:yellow)
     puts "\n\nImport sucessfull".colorize(:yellow)
+    puts "#{Time.now - start}".to_s.colorize(:yellow)
   end
 
   def self.build_accounts
-    puts "----------------------------------------------------".colorize(:green)
-    puts "| Building Account Data                            |".colorize(:green)
+    puts "----------------------------------------------------".colorize(:yellow)
+    puts "| Building Account Data                            |".colorize(:yellow)
 
     account_columns = ['name', 'account_status', 'amount_spent']
 
@@ -33,24 +39,24 @@ module Importer
     account_data = Array.new
 
     raw_data.each do |account|
-      account_data.push({account_id:     account['id'],
-                         account_status: account['account_status'],
-                         amount_spent:   account['amount_spent'],
-                         name:           account['name']})
+      account_data << Account.new(account_id:     account['id'],
+                                  account_status: account['account_status'],
+                                  amount_spent:   account['amount_spent'],
+                                  name:           account['name'])
     end
 
     Account.transaction do
       Account.delete_all
-      Account.create!(account_data)
+      Account.import account_data, :validate => false
     end
 
-    puts "| Accounts: #{Account.count}".colorize(:green)
-    puts "| Done".colorize(:green)
+    puts "| Accounts: #{Account.count}".colorize(:yellow)
+    puts "| Done".colorize(:yellow)
   end
 
   def self.build_account_insights
-    puts "---------------------------------------------------|".colorize(:green)
-    puts "| Building Account Insight Data                    |".colorize(:green)
+    puts "---------------------------------------------------|".colorize(:yellow)
+    puts "| Building Account Insight Data                    |".colorize(:yellow)
 
     account_insights = Array.new
     account_actions = Array.new
@@ -68,7 +74,6 @@ module Importer
                                                   }}
 
       raw_data = JSON.parse(http_response)['data']
-
 
       raw_data.each do |account_insight|
         account_insights.push({account_id:  account_id,
@@ -116,39 +121,34 @@ module Importer
       raw_data = JSON.parse(http_response)['data']
 
       raw_data.each do |account_placement|
-        account_placements.push({date_start:  account_placement['date_start'],
-                                 date_stop:   account_placement['date_stop'],
-                                 account_id:  account_placement['account_id'],
-                                 impressions: account_placement['impressions'],
-                                 spend:       account_placement['spend'],
-                                 placement:   account_placement['placement']})
+        account_placements.push({
+                                date_start:  account_placement['date_start'],
+                                date_stop:   account_placement['date_stop'],
+                                account_id:  account_placement['account_id'],
+                                impressions: account_placement['impressions'],
+                                spend:       account_placement['spend'],
+                                placement:   account_placement['placement']})
       end
     end
 
-    AccountInsight.transaction do
-      AccountInsight.delete_all
-      AccountInsight.create!(account_insights)
-    end
+    AccountInsight.delete_all
+    AccountInsight.bulk_insert values: account_insights
 
-    Action.transaction do
-      Action.delete_all
-      Action.create!(account_actions)
-    end
+    Action.delete_all
+    Action.bulk_insert values: account_actions
 
-    AccountPlacement.transaction do
-      AccountPlacement.delete_all
-      AccountPlacement.create!(account_placements)
-    end
+    AccountPlacement.delete_all
+    AccountPlacement.bulk_insert values: account_placements
 
-    puts "| Account Insights: #{AccountInsight.count}".colorize(:green)
-    puts "| Account Actions: #{Action.count}".colorize(:green)
-    puts "| Account Placements: #{AccountPlacement.count}".colorize(:green)
-    puts "| Done".colorize(:green)
+    puts "| Account Insights: #{AccountInsight.count}".colorize(:yellow)
+    puts "| Account Actions: #{Action.count}".colorize(:yellow)
+    puts "| Account Placements: #{AccountPlacement.count}".colorize(:yellow)
+    puts "| Done".colorize(:yellow)
   end
 
   def self.build_account_creatives
-    puts "---------------------------------------------------|".colorize(:green)
-    puts "| Building Account Creative Data                   |".colorize(:green)
+    puts "---------------------------------------------------|".colorize(:yellow)
+    puts "| Building Account Creative Data                   |".colorize(:yellow)
 
     ad_account_creatives = Array.new
 
@@ -171,18 +171,16 @@ module Importer
       end
     end
 
-    AdAccountCreative.transaction do
-      AdAccountCreative.delete_all
-      AdAccountCreative.create!(ad_account_creatives)
-    end
+    AdAccountCreative.delete_all
+    AdAccountCreative.bulk_insert values: ad_account_creatives
 
-    puts "| Account Creatives: #{AdAccountCreative.count}".colorize(:green)
-    puts "| Done".colorize(:green)
+    puts "| Account Creatives: #{AdAccountCreative.count}".colorize(:yellow)
+    puts "| Done".colorize(:yellow)
   end
 
   def self.build_ad_creative_lookup
-    puts "---------------------------------------------------|".colorize(:green)
-    puts "| Building Account Creative Lookup Data            |".colorize(:green)
+    puts "---------------------------------------------------|".colorize(:yellow)
+    puts "| Building Account Creative Lookup Data            |".colorize(:yellow)
 
     ad_creative_lookups = Array.new
 
@@ -204,19 +202,17 @@ module Importer
       end
     end
 
-    AdCreativeLookup.transaction do
-      AdCreativeLookup.delete_all
-      AdCreativeLookup.create!(ad_creative_lookups)
-    end
+    AdCreativeLookup.delete_all
+    AdCreativeLookup.bulk_insert values: ad_creative_lookups
 
-    puts "| Account Creative Lookups Created: #{AdCreativeLookup.count}".colorize(:green)
-    puts "| Done".colorize(:green)
+    puts "| Account Creative Lookups Created: #{AdCreativeLookup.count}".colorize(:yellow)
+    puts "| Done".colorize(:yellow)
   end
 
   def self.build_campaigns
-    puts "---------------------------------------------------|".colorize(:green)
-    puts "----------------------------------------------------".colorize(:green)
-    puts "| Building Campaign Data                           |".colorize(:green)
+    puts "---------------------------------------------------|".colorize(:yellow)
+    puts "----------------------------------------------------".colorize(:yellow)
+    puts "| Building Campaign Data                           |".colorize(:yellow)
 
     campaigns = Array.new
     campaign_actions = Array.new
@@ -255,7 +251,8 @@ module Importer
                         frequency:     campaign['frequency'],
                         reach:         campaign['reach'],
                         cpm:           campaign['cpm'],
-                        audience:      audience})
+                        audience:      audience,
+                        name_flagged:  campaign_name_flagged(campaign['campaign_name'])})
 
         unless campaign['actions'].nil?
           campaign['actions'].each do |action|
@@ -271,19 +268,15 @@ module Importer
       end
     end
 
-    Campaign.transaction do
-      Campaign.delete_all
-      Campaign.create!(campaigns)
-    end
+    Campaign.delete_all
+    Campaign.bulk_insert values: campaigns
 
-    CampaignAction.transaction do
-      CampaignAction.delete_all
-      CampaignAction.create!(campaign_actions)
-    end
+    CampaignAction.delete_all
+    CampaignAction.bulk_insert values: campaign_actions
 
-    puts "| Campaigns: #{Campaign.count}"
-    puts "| Campaigns Actions: #{CampaignAction.count}"
-    puts "| Done                                             |".colorize(:green)
+    puts "| Campaigns: #{Campaign.count}".colorize(:yellow)
+    puts "| Campaigns Actions: #{CampaignAction.count}".colorize(:yellow)
+    puts "| Done                                             |".colorize(:yellow)
   end
 
   def self.build_adsets
@@ -312,14 +305,14 @@ module Importer
           audience = "POST"
         end
 
-        adsets.push({name:         adset['name'],
+        adsets << Adset.new(name:         adset['name'],
                      adset_id:     adset['id'],
                      account_id:   account_id,
                      campaign_id:  adset['campaign_id'],
                      status:       adset['status'],
                      daily_budget: adset['daily_budget'],
                      audience:     audience,
-                     targeting:    adset['targeting']})
+                     name_flagged: adset_name_flagged(adset['name']))
 
         if adset['targeting']
           if adset['targeting']['flexible_spec']
@@ -344,30 +337,26 @@ module Importer
         end
 
         if adset['targeting']
-          adset_targetings.push({age_min: adset['targeting']['age_min'],
+          adset_targetings << AdsetTargeting.new(age_min: adset['targeting']['age_min'],
                                  age_max: adset['targeting']['age_max'],
                                  account_id: account_id,
                                  campaign_id: adset['campaign_id'],
                                  adset_id: adset['id'],
-                                 audience: audience,
-                                 interests: interests,
-                                 cities: cities})
+                                 audience: audience)
+                                #  interests: interests,
+                                #  cities: cities)
         end
       end
     end
 
-    Adset.transaction do
-      Adset.delete_all
-      Adset.create!(adsets)
-    end
+    Adset.delete_all
+    Adset.import adsets, :validate => false
 
-    AdsetTargeting.transaction do
-      AdsetTargeting.delete_all
-      AdsetTargeting.create!(adset_targetings)
-    end
+    AdsetTargeting.delete_all
+    AdsetTargeting.import adset_targetings, :validate => false
 
-    puts "Adsets Created: #{Adset.count}"
-    puts "Adsets Tagets Created: #{AdsetTargeting.count}"
+    puts "Adsets Created: #{Adset.count}".colorize(:yellow)
+    puts "Adsets Tagets Created: #{AdsetTargeting.count}".colorize(:yellow)
   end
 
   def self.build_ads
@@ -424,16 +413,16 @@ module Importer
                   reach:         ad['reach'],
                   audience:      audience,
                   format:        format,
-                  edition:       edition})
+                  edition:       edition,
+                  name_flagged:  ad_name_flagged(ad['ad_name'])
+                  })
       end
     end
 
-    Ad.transaction do
-      Ad.delete_all
-      Ad.create!(ads)
-    end
+    Ad.delete_all
+    Ad.bulk_insert values: ads
 
-    puts "Ads Created: #{Ad.count}"
+    puts "Ads Created: #{Ad.count}".colorize(:yellow)
   end
 
   private
@@ -447,6 +436,9 @@ module Importer
 
     # Tynan's
     # ['act_1253619597986320', 'act_1219616701386610']
+
+    # Yogurtland
+    # ['act_965932350088381']
 
     # Top 25
     ['act_1219094644772149', 'act_1219093434772270', 'act_1219094751438805',
@@ -463,5 +455,53 @@ module Importer
 
   def self.bar_count(string)
     string.count('|')
+  end
+
+  def self.campaign_name_flagged(campaign_name)
+    bar_count = campaign_name.count('|')
+
+    if campaign_name.include?("Post")
+      post = true
+    else
+      post = false
+    end
+
+    if !post && bar_count != 2
+      return true
+    else
+      return false
+    end
+  end
+
+  def self.adset_name_flagged(adset_name)
+    bar_count = adset_name.count('|')
+
+    if adset_name.include?("Post:")
+      post = true
+    else
+      post = false
+    end
+
+    if bar_count < 3 && !post
+      return true
+    else
+      return false
+    end
+  end
+
+  def self.ad_name_flagged(ad_name)
+    bar_count = ad_name.count('|')
+
+    if ad_name.include?("Post:")
+      post = true
+    else
+      post = false
+    end
+
+    if bar_count < 3 && !post
+      return true
+    else
+      return false
+    end
   end
 end

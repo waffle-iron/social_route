@@ -1,0 +1,96 @@
+<% provide(:title, 'Naming Verification') %>
+<center>
+  <h1>Naming Verification</h1>
+</center>
+
+<div ng-controller='NamingVerificationCtrl'>
+  <ul class='collapsible' data-collapsible='accordion'>
+    <li>
+      <div class='collapsible-header'>
+        <b>
+          Campaigns
+          <span ng-if='namingVerificationData.campaigns.length > 0'
+                class='red-text text-lighten-1'>
+            {{namingVerificationData.campaigns.length}}
+          </span>
+        </b>
+      </div>
+      <div class='collapsible-body'
+           style='padding-left: 30px; padding-right: 30px;'>
+        <table class='bordered responsive-table'>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Campaign</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="data in namingVerificationData.campaigns
+                          | orderBy:['accountName', 'campaign_name']">
+              <td>{{data.accountName}}</td>
+              <td>{{data.campaign_name}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+    <li>
+      <div class='collapsible-header'>
+        <b>
+          Adsets
+          <span ng-if='namingVerificationData.adsets.length > 0'
+                class='red-text text-lighten-1'>
+            {{namingVerificationData.adsets.length}}
+          </span>
+        </b>
+      </div>
+      <div class='collapsible-body'
+           style='padding-left: 30px; padding-right: 30px;'>
+        <table class='bordered responsive-table'>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Ad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="data in namingVerificationData.adsets
+                          | orderBy:['accountName', 'name']">
+              <td>{{data.accountName}}</td>
+              <td>{{data.name}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+    <li>
+      <div class='collapsible-header'>
+        <b>
+          Ads
+          <span ng-if='namingVerificationData.ads.length > 0'
+                class='red-text text-lighten-1'>
+            {{namingVerificationData.ads.length}}
+          </span>
+        </b>
+      </div>
+      <div class='collapsible-body'
+           style='padding-left: 30px; padding-right: 30px;'>
+        <table class='bordered responsive-table'>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Ad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="data in namingVerificationData.ads
+                          | orderBy:['accountName', 'ad_name']">
+              <td>{{data.accountName}}</td>
+              <td>{{data.ad_name}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+  </ul>
+</div>

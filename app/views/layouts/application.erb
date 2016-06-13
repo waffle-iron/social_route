@@ -23,8 +23,18 @@
                   <%= link_to(dashboard_path) do %>
                     <i class='material-icons'>view_module</i>
                   <% end %>
+                </li>
+                <li>
                   <%= link_to(profile_path) do %>
                     <i class='material-icons'>person</i>
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to(naming_verification_path) do %>
+                    Naming
+                    <span class='badge red white-text'>
+                      <%= naming_errors %>
+                    </span>
                   <% end %>
                 </li>
                 <li>

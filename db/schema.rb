@@ -11,254 +11,258 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160610193452) do
+ActiveRecord::Schema.define(version: 20160613155917) do
 
   create_table "account_insights", force: :cascade do |t|
-    t.string   "account_id"
-    t.string   "account_name"
-    t.string   "age"
-    t.string   "gender"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.string   "actions"
-    t.string   "impressions"
-    t.float    "spend"
-    t.integer  "website_clicks"
-    t.string   "date"
+    t.string   "account_id",     limit: 191
+    t.string   "account_name",   limit: 191
+    t.string   "age",            limit: 191
+    t.string   "gender",         limit: 191
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.string   "actions",        limit: 191
+    t.string   "impressions",    limit: 191
+    t.float    "spend",          limit: 24
+    t.integer  "website_clicks", limit: 4
+    t.string   "date",           limit: 191
   end
 
   create_table "account_placements", force: :cascade do |t|
-    t.string   "date_start"
-    t.string   "date_stop"
-    t.string   "account_id"
-    t.integer  "impressions"
-    t.float    "spend"
-    t.string   "placement"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.string   "date_start",  limit: 191
+    t.string   "date_stop",   limit: 191
+    t.string   "account_id",  limit: 191
+    t.integer  "impressions", limit: 4
+    t.float    "spend",       limit: 24
+    t.string   "placement",   limit: 191
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
   end
 
   create_table "accounts", force: :cascade do |t|
-    t.string   "account_id"
-    t.string   "account_status"
-    t.float    "age"
-    t.string   "amount_spent"
-    t.string   "name"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
+    t.string   "account_id",     limit: 191
+    t.string   "account_status", limit: 191
+    t.float    "age",            limit: 24
+    t.string   "amount_spent",   limit: 191
+    t.string   "name",           limit: 191
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
   end
 
   create_table "actions", force: :cascade do |t|
-    t.string   "account_id"
-    t.string   "action_type"
-    t.string   "date"
-    t.float    "value"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.string   "age"
-    t.string   "gender"
+    t.string   "account_id",  limit: 191
+    t.string   "action_type", limit: 191
+    t.string   "date",        limit: 191
+    t.float    "value",       limit: 24
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "age",         limit: 191
+    t.string   "gender",      limit: 191
   end
 
   create_table "ad_account_creatives", force: :cascade do |t|
-    t.string   "image_url"
-    t.string   "thumbnail_url"
-    t.string   "creative_id"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.text     "image_url",     limit: 65535
+    t.text     "thumbnail_url", limit: 65535
+    t.string   "creative_id",   limit: 191
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
   end
 
   create_table "ad_actions", force: :cascade do |t|
-    t.string   "action_type"
-    t.float    "value"
-    t.string   "account_id"
-    t.string   "campaign_id"
-    t.string   "campaign_name"
-    t.string   "objective"
-    t.string   "audience"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.string   "placement"
+    t.string   "action_type",   limit: 191
+    t.float    "value",         limit: 24
+    t.string   "account_id",    limit: 191
+    t.string   "campaign_id",   limit: 191
+    t.string   "campaign_name", limit: 191
+    t.string   "objective",     limit: 191
+    t.string   "audience",      limit: 191
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+    t.string   "placement",     limit: 191
   end
 
   create_table "ad_creative_lookups", force: :cascade do |t|
-    t.string   "ad_id"
-    t.string   "creative_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.string   "ad_id",       limit: 191
+    t.string   "creative_id", limit: 191
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
   end
 
   create_table "ads", force: :cascade do |t|
-    t.string   "date_start"
-    t.string   "date_stop"
-    t.string   "account_id"
-    t.string   "ad_id"
-    t.string   "ad_name"
-    t.string   "campaign_id"
-    t.string   "adset_id"
-    t.string   "objective"
-    t.integer  "total_actions"
-    t.string   "impressions"
-    t.float    "spend"
-    t.float    "frequency"
-    t.integer  "reach"
-    t.float    "cpm"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.string   "placement"
-    t.string   "campaign_name"
-    t.string   "audience"
-    t.string   "format"
-    t.string   "edition"
-    t.string   "simple_name"
+    t.string   "date_start",    limit: 191
+    t.string   "date_stop",     limit: 191
+    t.string   "account_id",    limit: 191
+    t.string   "ad_id",         limit: 191
+    t.string   "ad_name",       limit: 191
+    t.string   "campaign_id",   limit: 191
+    t.string   "adset_id",      limit: 191
+    t.string   "objective",     limit: 191
+    t.integer  "total_actions", limit: 4
+    t.string   "impressions",   limit: 191
+    t.float    "spend",         limit: 24
+    t.float    "frequency",     limit: 24
+    t.integer  "reach",         limit: 4
+    t.float    "cpm",           limit: 24
+    t.datetime "created_at",                                null: false
+    t.datetime "updated_at",                                null: false
+    t.string   "placement",     limit: 191
+    t.string   "campaign_name", limit: 191
+    t.string   "audience",      limit: 191
+    t.string   "format",        limit: 191
+    t.string   "edition",       limit: 191
+    t.string   "simple_name",   limit: 191
+    t.boolean  "name_flagged",              default: false
   end
 
   create_table "adset_actions", force: :cascade do |t|
-    t.string   "action_type"
-    t.float    "value"
-    t.string   "account_id"
-    t.string   "campaign_id"
-    t.string   "adset_id"
-    t.string   "adset_name"
-    t.string   "objective"
-    t.string   "audience"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.string   "action_type", limit: 191
+    t.float    "value",       limit: 24
+    t.string   "account_id",  limit: 191
+    t.string   "campaign_id", limit: 191
+    t.string   "adset_id",    limit: 191
+    t.string   "adset_name",  limit: 191
+    t.string   "objective",   limit: 191
+    t.string   "audience",    limit: 191
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
   end
 
   create_table "adset_insights", force: :cascade do |t|
-    t.string   "adset_name"
-    t.float    "spend"
-    t.float    "frequency"
-    t.string   "adset_id"
-    t.string   "account_id"
-    t.string   "campaign_id"
-    t.string   "objective"
-    t.string   "audience"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.string   "impressions"
+    t.string   "adset_name",  limit: 191
+    t.float    "spend",       limit: 24
+    t.float    "frequency",   limit: 24
+    t.string   "adset_id",    limit: 191
+    t.string   "account_id",  limit: 191
+    t.string   "campaign_id", limit: 191
+    t.string   "objective",   limit: 191
+    t.string   "audience",    limit: 191
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "impressions", limit: 191
   end
 
   create_table "adset_targetings", force: :cascade do |t|
-    t.string   "age_min"
-    t.string   "age_max"
-    t.string   "account_id"
-    t.string   "campaign_id"
-    t.string   "adset_id"
-    t.string   "audience"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.string   "targeting"
-    t.string   "interests"
-    t.string   "cities"
+    t.string   "age_min",     limit: 191
+    t.string   "age_max",     limit: 191
+    t.string   "account_id",  limit: 191
+    t.string   "campaign_id", limit: 191
+    t.string   "adset_id",    limit: 191
+    t.string   "audience",    limit: 191
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "targeting",   limit: 191
+    t.string   "interests",   limit: 191
+    t.string   "cities",      limit: 191
   end
 
   create_table "adsets", force: :cascade do |t|
-    t.string   "name"
-    t.string   "adset_id"
-    t.string   "account_id"
-    t.string   "campaign_id"
-    t.string   "status"
-    t.float    "daily_budget"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.string   "audience"
-    t.string   "targeting"
-    t.string   "objective"
+    t.string   "name",         limit: 191
+    t.string   "adset_id",     limit: 191
+    t.string   "account_id",   limit: 191
+    t.string   "campaign_id",  limit: 191
+    t.string   "status",       limit: 191
+    t.float    "daily_budget", limit: 24
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
+    t.string   "audience",     limit: 191
+    t.string   "targeting",    limit: 191
+    t.string   "objective",    limit: 191
+    t.boolean  "name_flagged",             default: false
   end
 
   create_table "authentications", force: :cascade do |t|
-    t.string   "facebook_access_token"
-    t.string   "facebook_name"
-    t.string   "user_id"
-    t.string   "facebook_user_id"
-    t.string   "facebook_profile_picture_url"
-    t.datetime "created_at",                   null: false
-    t.datetime "updated_at",                   null: false
+    t.string   "facebook_access_token",        limit: 191
+    t.string   "facebook_name",                limit: 191
+    t.string   "user_id",                      limit: 191
+    t.string   "facebook_user_id",             limit: 191
+    t.string   "facebook_profile_picture_url", limit: 191
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
   end
 
   create_table "campaign_actions", force: :cascade do |t|
-    t.string   "action_type"
-    t.string   "account_id"
-    t.float    "value"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.string   "campaign_id"
-    t.string   "objective"
-    t.string   "campaign_name"
-    t.string   "audience"
-    t.float    "spend"
-    t.string   "impressions"
+    t.string   "action_type",   limit: 191
+    t.string   "account_id",    limit: 191
+    t.float    "value",         limit: 24
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+    t.string   "campaign_id",   limit: 191
+    t.string   "objective",     limit: 191
+    t.string   "campaign_name", limit: 191
+    t.string   "audience",      limit: 191
+    t.float    "spend",         limit: 24
+    t.string   "impressions",   limit: 191
   end
 
   create_table "campaign_insight_twos", force: :cascade do |t|
-    t.string   "campaign_name"
-    t.integer  "impressions"
-    t.float    "spend"
-    t.float    "cpm"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.integer  "audience"
-    t.string   "campaign_id"
-    t.string   "account_id"
-    t.string   "objective"
+    t.string   "campaign_name", limit: 191
+    t.integer  "impressions",   limit: 4
+    t.float    "spend",         limit: 24
+    t.float    "cpm",           limit: 24
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+    t.integer  "audience",      limit: 4
+    t.string   "campaign_id",   limit: 191
+    t.string   "account_id",    limit: 191
+    t.string   "objective",     limit: 191
   end
 
   create_table "campaign_insights", force: :cascade do |t|
-    t.string   "account_id"
-    t.string   "campaign_id"
-    t.integer  "website_clicks"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.string   "objective"
-    t.string   "campaign_name"
-    t.string   "audience"
-    t.float    "spend"
-    t.string   "impressions"
+    t.string   "account_id",     limit: 191
+    t.string   "campaign_id",    limit: 191
+    t.integer  "website_clicks", limit: 4
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.string   "objective",      limit: 191
+    t.string   "campaign_name",  limit: 191
+    t.string   "audience",       limit: 191
+    t.float    "spend",          limit: 24
+    t.string   "impressions",    limit: 191
   end
 
   create_table "campaigns", force: :cascade do |t|
-    t.string   "account_id"
+    t.string   "account_id",    limit: 191
     t.datetime "created_time"
-    t.string   "objective"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.string   "campaign_id"
-    t.string   "placement"
-    t.integer  "spend"
-    t.float    "frequency"
-    t.string   "impressions"
-    t.float    "cpm"
-    t.integer  "reach"
-    t.string   "audience"
+    t.string   "objective",     limit: 191
+    t.datetime "created_at",                                null: false
+    t.datetime "updated_at",                                null: false
+    t.string   "campaign_id",   limit: 191
+    t.string   "placement",     limit: 191
+    t.integer  "spend",         limit: 4
+    t.float    "frequency",     limit: 24
+    t.string   "impressions",   limit: 191
+    t.float    "cpm",           limit: 24
+    t.integer  "reach",         limit: 4
+    t.string   "audience",      limit: 191
     t.datetime "date_start"
     t.datetime "date_stop"
-    t.string   "campaign_name"
+    t.string   "campaign_name", limit: 191
+    t.boolean  "name_flagged",              default: false
+    t.boolean  "post",                      default: false
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "email",                              default: "", null: false
-    t.string   "encrypted_password",                 default: "", null: false
-    t.string   "reset_password_token"
+    t.string   "email",                  limit: 191, default: "", null: false
+    t.string   "encrypted_password",     limit: 191, default: "", null: false
+    t.string   "reset_password_token",   limit: 191
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
-    t.integer  "sign_in_count",                      default: 0,  null: false
+    t.integer  "sign_in_count",          limit: 4,   default: 0,  null: false
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
-    t.string   "current_sign_in_ip"
-    t.string   "last_sign_in_ip"
+    t.string   "current_sign_in_ip",     limit: 191
+    t.string   "last_sign_in_ip",        limit: 191
     t.datetime "created_at",                                      null: false
     t.datetime "updated_at",                                      null: false
-    t.string   "provider"
-    t.string   "uid"
-    t.string   "oauth_token"
+    t.string   "provider",               limit: 191
+    t.string   "uid",                    limit: 191
+    t.string   "oauth_token",            limit: 191
     t.datetime "oauth_expires_at"
     t.string   "confirmation_token",     limit: 128
     t.string   "remember_token",         limit: 128
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true
-  add_index "users", ["remember_token"], name: "index_users_on_remember_token"
-  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
+  add_index "users", ["remember_token"], name: "index_users_on_remember_token", using: :btree
+  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
 end

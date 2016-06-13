@@ -17,4 +17,14 @@ module ApplicationHelper
     end
     flash_messages.join("\n").html_safe
   end
+
+  def naming_errors
+    campaign_naming_errors = Campaign.where(name_flagged: true).count
+    adset_naming_errors = Adset.where(name_flagged: true).count
+    ad_naming_errors = Ad.where(name_flagged: true).count
+
+    if campaign_naming_errors > 0 || adset_naming_errors > 0 || ad_naming_errors > 0
+      return campaign_naming_errors + adset_naming_errors + ad_naming_errors
+    end
+  end
 end

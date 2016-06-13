@@ -21,12 +21,26 @@ class ApiController < ApplicationController
      'act_331941523628320'])
   end
 
+  def accounts
+    render json: Account.all
+  end
+
   def overview
     render json: campaign_data
   end
 
   def overview_adets
     render json: adset_data
+  end
+
+  def naming_verification
+    campaign_errors = Campaign.where(name_flagged: true)
+    adset_errors    = Adset.where(name_flagged: true)
+    ad_errors       = Ad.where(name_flagged: true)
+
+    render json: {campaigns: campaign_errors,
+                  adsets: adset_errors,
+                  ads:ad_errors}
   end
 
   def reporting

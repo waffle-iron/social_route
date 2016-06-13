@@ -14,6 +14,9 @@ class StaticPagesController < ApplicationController
   def reporting
   end
 
+  def naming_verification
+  end
+
   private
 
   def set_account
