@@ -1,24 +1,12 @@
-class Array
-  def pluck(key)
-    map { |h| h[key] }
-  end
-end
-
 class ApiController < ApplicationController
   include ActionView::Helpers::NumberHelper
+  include ApiHelper
+
   before_action :set_account_params
   before_action :require_login
 
   def dashboard
-    render json: Account.where(account_id: ['act_1219094644772149', 'act_1219093434772270', 'act_1219094751438805',
-     'act_1219094488105498', 'act_1219616701386610', 'act_1130403580307923',
-     'act_1139120289436252', 'act_1130403223641292', 'act_1253619597986320',
-     'act_1264926836855596', 'act_1374748469467327', 'act_937799526234997',
-     'act_1382151058724804', 'act_1382716158668218', 'act_1096482140366734',
-     'act_1382519912021865', 'act_923549197660030', 'act_256023237923821',
-     'act_1033441906670758', 'act_965932350088381', 'act_1380511028896841',
-     'act_1219093704772243', 'act_1219094968105450', 'act_944470208901262',
-     'act_331941523628320'])
+    render json: Account.where(account_id: allowed_accounts)
   end
 
   def accounts
@@ -44,36 +32,18 @@ class ApiController < ApplicationController
   end
 
   def reporting
-    @dates = "#{Date.parse(Action.where(account_id: @account_id).order('date').first.date).strftime("%B %e, %Y")} - #{Date.parse(Action.where(account_id: @account_id).order('date').last.date).strftime("%b %e, %Y")}"
-
     respond_to do |format|
       format.json do
-        impressions = Ad.where(account_id: @account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
-        reach = Ad.where(account_id: @account_id_number).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
-        spend = Ad.where(account_id: @account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
-
-        final_data = impressions + reach + spend
-        json_data = final_data.group_by{|h| h[:objective]}.map{|k,v| v.reduce(:merge)}
-
-        data = []
-
-        account_stats = {impressions: AccountInsight.where(account_id: @account_id).select(:impressions).sum(:impressions),
-                         website_clicks: Action.where(account_id: @account_id, action_type: 'link_click', gender: nil, age: nil).sum(:value),
-                         website_conversions: Action.where(account_id: @account_id, action_type: 'offsite_conversion', gender: nil, age: nil).sum(:value),
-                         video_views: Action.where(account_id: @account_id, action_type: 'video_view', gender: nil, age: nil).sum(:value),
-                         post_engagement: Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
-                       }
-
-        # render json: audience_pdf
-        render json: {date_range: @dates,
+        render json: {date_range: @date_range,
                       overview: overview_stats,
                       account_stats: account_stats,
-                      cpm_cpr_placement: cpm_by_placement,
+                      cpm_cpr_placement: cpm_cpr_placement,
                       audiences: cpm_by_audience,
                       demographics: {age_and_gender: age_and_gender,
                                      audience_breakdowns: audience_demographics},
                       ad_formats: ad_formats,
                       ad_data: ad_data,
+                      best_ad_creative: best_ad_creative,
                       targeting: targeting,
                       best_ads: best_ads
                     }
@@ -83,27 +53,38 @@ class ApiController < ApplicationController
     end
   end
 
+  def account_stats
+    {
+      impressions: Ad2.where(account_id: @account_id_number).select(:impressions).sum(:impressions),
+      website_clicks: Ad2Action.where(account_id: @account_id_number, action_type: 'link_click').sum(:value),
+      website_conversions: Ad2Action.where(account_id: @account_id_number, action_type: 'offsite_conversion').sum(:value),
+      video_views: Ad2Action.where(account_id: @account_id_number, action_type: 'video_view').sum(:value),
+      post_engagement: Ad2Action.where(account_id: @account_id_number, action_type: ['comment', 'post', 'post_like', 'like']).sum(:value)
+    }
+  end
+
   def overview_stats
-    impressions = Campaign.where(account_id: @account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
-    reach = Campaign.where(account_id: @account_id_number).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
-    spend = Campaign.where(account_id: @account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
+    impressions = Ad2.where(account_id: @account_id_number).group(:objective).sum(:impressions).map{|k,v| {objective: k, impressions: v}}
+    reach =       Ad2.where(account_id: @account_id_number).group(:objective).sum(:reach).map{|k,v| {objective: k, reach: v}}
+    spend =       Ad2.where(account_id: @account_id_number).group(:objective).sum(:spend).map{|k,v| {objective: k, spend: v}}
 
     results = [
-      {objective: "LINK_CLICKS",     results: CampaignAction.where(account_id: @account_id_number, objective: 'LINK_CLICKS', action_type: "link_click").sum(:value)},
-      {objective: "POST_ENGAGEMENT", results: CampaignAction.where(account_id: @account_id_number, objective: 'POST_ENGAGEMENT', action_type: "post_engagement").sum(:value)},
-      {objective: "VIDEO_VIEWS",     results: Action.where(account_id: @account_id, action_type: 'video_view',  gender: nil, age: nil).sum(:value)},
-      {objective: "CONVERSIONS",     results: CampaignAction.where(account_id: @account_id_number, objective: 'CONVERSIONS', action_type: "offsite_conversion").sum(:value)}
+      {objective: "LINK_CLICKS",     results: Ad2Action.where(account_id: @account_id_number, objective: 'LINK_CLICKS', action_type: 'link_click').sum(:value)},
+      {objective: 'POST_ENGAGEMENT', results: Ad2Action.where(account_id: @account_id_number, objective: 'POST_ENGAGEMENT', action_type: 'post_engagement').sum(:value)},
+      {objective: 'VIDEO_VIEWS',     results: Ad2Action.where(account_id: @account_id_number, objective: 'VIDEO_VIEWS', action_type: 'video_view').sum(:value)},
+      {objective: 'CONVERSIONS',     results: Ad2Action.where(account_id: @account_id_number, objective: 'CONVERSIONS', action_type: "offsite_conversion").sum(:value)}
     ]
-
-    #Calculate VV by CampaignAction?
 
     combined_data = impressions + reach + spend + results
 
     return combined_data.group_by{|h| h[:objective]}.map{|k,v| v.reduce(:merge)}
   end
 
-  def cpm_by_placement
-    data = []
+  def cpm_cpr_placement
+    data = Array.new
+
+    result_columns = ['video_view', 'offsite_conversion', 'comment', 'post',
+                      'post_like', 'like', 'link_click']
 
     placements = [{name: 'Desktop News Feed',    placement_columns: ['desktop_feed', 'desktop_video_channel']},
                   {name: 'Mobile News Feed',     placement_columns: ['mobile_feed', 'mobile_video_channel']},
@@ -112,10 +93,11 @@ class ApiController < ApplicationController
                   {name: 'Audience Network',     placement_columns: 'mobile_external_only'}]
 
     placements.each do |placement|
-      impressions = AccountPlacement.where(account_id: @account_id_number, placement: placement[:placement_columns]).sum(:impressions).to_f
-      spend       = AccountPlacement.where(account_id: @account_id_number, placement: placement[:placement_columns]).sum(:spend)
+      impressions = Ad2Placement.where(account_id: @account_id_number, placement: placement[:placement_columns]).sum(:impressions).to_f
+      spend       = Ad2Placement.where(account_id: @account_id_number, placement: placement[:placement_columns]).sum(:spend)
+      results     = Ad2PlacementAction.where(account_id: @account_id_number, placement: placement[:placement_columns], action_type: result_columns).sum(:value)
 
-      data.push(placement: placement[:name], cpm: spend/(impressions/1000))
+      data.push(placement: placement[:name], cpm: spend/(impressions/1000), cpr: spend/results)
     end
 
     return data
@@ -158,9 +140,9 @@ class ApiController < ApplicationController
                               'post', 'post_like', 'like', 'link_click']
 
     ages.each do |age|
-      results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: ages, gender: ['male', 'female', 'unknown']).sum(:value)
-      male_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: age, gender: ['male', 'unknown']).sum(:value)
-      female_age_results = Action.where(account_id: @account_id, action_type: age_and_gender_columns, age: age, gender: 'female').sum(:value)
+      results = Ad2AgeAndGenderAction.where(account_id: @account_id_number, action_type: age_and_gender_columns, age: ages, gender: ['male', 'female', 'unknown']).sum(:value)
+      male_age_results = Ad2AgeAndGenderAction.where(account_id: @account_id_number, action_type: age_and_gender_columns, age: age, gender: ['male', 'unknown']).sum(:value)
+      female_age_results = Ad2AgeAndGenderAction.where(account_id: @account_id_number, action_type: age_and_gender_columns, age: age, gender: 'female').sum(:value)
 
       age_and_gender_breakdowns.push(age: age, male_results: (male_age_results/results)*100, female_results: (female_age_results/results)*100)
     end
@@ -170,13 +152,13 @@ class ApiController < ApplicationController
 
   def audience_demographics
     audience_demographics = Array.new
-    audiences = AdsetTargeting.where(account_id: @account_id).order(:audience).pluck('audience').uniq
+    audiences = Ad2.where(account_id: @account_id_number).order(:audience).pluck('audience').uniq
     columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
-    total_results = CampaignAction.where(account_id: @account_id_number, action_type: columns).sum(:value)
+    total_results = Ad2Action.where(account_id: @account_id_number, action_type: columns).sum(:value)
     cleaned_audiences = Array.new
 
     audiences.each do |audience|
-      results = CampaignAction.where(account_id: @account_id_number, action_type: columns, audience: audience).sum(:value)
+      results = Ad2Action.where(account_id: @account_id_number, action_type: columns, audience: audience).sum(:value)
       percentage = (results/total_results)*100
 
       if percentage >= 1
@@ -185,11 +167,14 @@ class ApiController < ApplicationController
     end
 
     cleaned_audiences.each do |audience|
-      spend = Campaign.where(account_id: @account_id_number, audience: audience).sum(:spend)
-      results = CampaignAction.where(account_id: @account_id_number, action_type: columns, audience: audience).sum(:value)
-      impressions = Campaign.where(account_id: @account_id_number, audience: audience).sum(:impressions).to_f
+      spend = Ad2.where(account_id: @account_id_number, audience: audience).sum(:spend)
+      results = Ad2Action.where(account_id: @account_id_number, action_type: columns, audience: audience).sum(:value)
+      impressions = Ad2.where(account_id: @account_id_number, audience: audience).sum(:impressions).to_f
 
-      audience_demographics.push(audience: number_with_delimiter(audience, delimiter: ','), results: results, cpm: spend/(impressions/1000))
+      audience_demographics.push(audience: number_with_delimiter(audience, delimiter: ','),
+                                 results: results,
+                                 cpr: spend/results,
+                                 cpm: spend/(impressions/1000))
     end
 
     return audience_demographics
@@ -252,18 +237,21 @@ class ApiController < ApplicationController
 
   def ad_formats
     final_data = Array.new
+    columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
 
-    impressions = Ad.where(account_id: @account_id_number).group(:format).sum(:impressions).map{|k,v| {format: k, impressions: v}}
-    spend = Ad.where(account_id: @account_id_number).group(:format).sum(:spend).map{|k,v| {format: k, spend: v}}
+    impressions = Ad2.where(account_id: @account_id_number).group(:format).sum(:impressions).map{|k,v| {format: k, impressions: v}}
+    spend = Ad2.where(account_id: @account_id_number).group(:format).sum(:spend).map{|k,v| {format: k, spend: v}}
+    results = Ad2Action.where(account_id: @account_id_number, action_type: columns).group(:format).sum(:value).map{|k,v| {format: k, results: v}}
 
-    raw_data = impressions + spend
+    raw_data = impressions + spend + results
     json_data = raw_data.group_by{|h| h[:format]}.map{|k,v| v.reduce(:merge)}
 
     json_data.each do |data|
       unless data[:format].to_s == 'VIDEO' || data[:format].to_s == 'Mislabeled'
         final_data.push(format: data[:format],
                         cpm: data[:spend]/(data[:impressions].to_f/1000),
-                        creative: Ad.where(account_id: @account_id_number, format: data[:format]))
+                        cpr:data[:spend]/ data[:results],
+                        creative: Ad2.where(account_id: @account_id_number, format: data[:format]))
       end
     end
 
@@ -273,27 +261,93 @@ class ApiController < ApplicationController
   def ad_data
     final_data = Array.new
 
-    impressions = Ad.where(account_id: @account_id_number).group(:simple_name).sum(:impressions).map{|k,v| {simple_name: k, impressions: v}}
-    spend = Ad.where(account_id: @account_id_number).group(:simple_name).sum(:spend).map{|k,v| {simple_name: k, spend: v}}
-
-    raw_data = impressions + spend
+    columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
+    impressions = Ad2.where(account_id: @account_id_number).group(:simple_name).sum(:impressions).map{|k,v| {simple_name: k, impressions: v}}
+    spend = Ad2.where(account_id: @account_id_number).group(:simple_name).sum(:spend).map{|k,v| {simple_name: k, spend: v}}
+    results = Ad2Action.where(account_id: @account_id_number, action_type: columns).group(:simple_name).sum(:value).map{|k,v| {simple_name: k, results: v}}
+    raw_data = impressions + spend + results
     json_data = raw_data.group_by{|h| h[:simple_name]}.map{|k,v| v.reduce(:merge)}
 
     json_data.each do |data|
       unless data[:simple_name].to_s == '2016' || data[:simple_name].to_s == 'Mislabeled'
-        ad = Ad.where(account_id: @account_id_number, simple_name: data[:simple_name]).first
+        ads_by_simple_name = Ad2.where(account_id: @account_id_number, simple_name: data[:simple_name])
 
-        ad_creative = AdCreativeLookup.find_by_ad_id(ad.ad_id)
-        creative = AdAccountCreative.find_by_creative_id(ad_creative.creative_id)
+        best_ad_creatives = Array.new
+
+        ads_by_simple_name.each do |ad|
+          cpm = ad.spend/(ad.impressions.to_f/1000)
+          results = Ad2Action.where(account_id: @account_id_number, simple_name: data[:simple_name], action_type: columns).sum(:value).to_f
+          cpr = ad.spend/results
+
+          best_ad_creatives.push({
+            ad_id: ad.ad_id,
+            cpm: cpm,
+            cpr: cpr
+          })
+        end
+
+        best_cpm_creative_ad_id = best_ad_creatives.sort_by { |hsh| hsh[:cpm] }.first[:ad_id]
+        best_cpr_creative_ad_id = best_ad_creatives.sort_by { |hsh| hsh[:cpr] }.first[:ad_id]
+
+        best_cpm_ad_creative = AdCreativeLookup.find_by_ad_id(best_cpm_creative_ad_id)
+        best_cpm_creative = AdAccountCreative.find_by_creative_id(best_cpm_ad_creative.creative_id)
+
+        best_cpr_ad_creative = AdCreativeLookup.find_by_ad_id(best_cpr_creative_ad_id)
+        best_cpr_creative = AdAccountCreative.find_by_creative_id(best_cpr_ad_creative.creative_id)
 
         final_data.push(simple_name: data[:simple_name],
                         cpm: data[:spend]/(data[:impressions].to_f/1000),
-                        creative: creative
-                       )
+                        cpr: data[:spend]/ data[:results],
+                        best_cpm_creative: best_cpm_creative,
+                        best_cpr_creative: best_cpr_creative)
       end
     end
 
     return final_data
+  end
+
+  def best_ad_creative
+    score_array = Array.new
+
+    columns = ['video_view', 'offsite_conversion', 'comment', 'post', 'post_like', 'like', 'link_click']
+    impressions = Ad2.where(account_id: @account_id_number).group(:simple_name).sum(:impressions).map{|k,v| {simple_name: k, impressions: v}}
+    spend = Ad2.where(account_id: @account_id_number).group(:simple_name).sum(:spend).map{|k,v| {simple_name: k, spend: v}}
+    results = Ad2Action.where(account_id: @account_id_number, action_type: columns).group(:simple_name).sum(:value).map{|k,v| {simple_name: k, results: v}}
+    raw_data = impressions + spend + results
+    json_data = raw_data.group_by{|h| h[:simple_name]}.map{|k,v| v.reduce(:merge)}
+
+    json_data.each do |data|
+      cpm = data[:spend].to_f/(data[:impressions].to_f/1000)
+      results = Ad2Action.where(account_id: @account_id_number, simple_name: data[:simple_name], action_type: columns).sum(:value).to_f
+      cpr = data[:spend]/results
+
+      score_array.push({
+        simple_name: data[:simple_name],
+        score: cpm * cpr
+      })
+    end
+
+    best_simple_name = score_array.sort_by { |hsh| hsh[:score] }.first[:simple_name]
+
+    results = Ad2Action.where(account_id: @account_id_number, simple_name: best_simple_name, action_type: columns).sum(:value).to_f
+    spend = Ad2.where(account_id: @account_id_number, simple_name: best_simple_name).sum(:spend)
+    reach = Ad2.where(account_id: @account_id_number, simple_name: best_simple_name).sum(:reach)
+    impressions = Ad2.where(account_id: @account_id_number, simple_name: best_simple_name).sum(:impressions).to_f
+
+    ad_id = Ad2.where(account_id: @account_id_number, simple_name: best_simple_name).first.ad_id
+    creative_id = AdCreativeLookup.find_by_ad_id(ad_id).creative_id
+    creative = AdAccountCreative.find_by_creative_id(creative_id)
+
+    return {
+      simple_name: best_simple_name,
+      results: results,
+      cpr: spend/results,
+      reach: reach,
+      impressions: impressions,
+      cpm: spend/(impressions/1000),
+      creative: creative
+    }
+
   end
 
   def targeting
@@ -337,11 +391,8 @@ class ApiController < ApplicationController
   end
 
   def build_pdf
-    @account = Account.find_by_account_id(params['account_id'])
-    @dates = "#{Date.parse(Action.where(account_id: @account_id).order('date').first.date).strftime("%B %e, %Y")} - #{Date.parse(Action.where(account_id: @account_id).order('date').last.date).strftime("%b %e, %Y")}"
-
     pdf = ReportPdf.new(@account.name,
-                        @dates,
+                        @date_range,
                         campaign_overview_pdf,
                         campaign_objectives_overview_pdf,
                         audience_pdf,
@@ -365,7 +416,7 @@ class ApiController < ApplicationController
   def campaign_overview_pdf
     campaign_overview = Array.new
 
-    impressions = AccountInsight.where(account_id: @account_id).select(:impressions).sum(:impressions).to_f
+    impressions = Ad2.where(account_id: @account_id_number).select(:impressions).sum(:impressions),
     website_clicks = Action.where(account_id: @account_id, action_type: 'link_click', gender: nil, age: nil).sum(:value)
     website_conversions = Action.where(account_id: @account_id, action_type: 'offsite_conversion', gender: nil, age: nil).sum(:value)
     post_engagement = Action.where(account_id: @account_id, action_type: ['comment', 'post', 'post_like', 'like'], gender: nil, age: nil).sum(:value)
@@ -560,8 +611,10 @@ class ApiController < ApplicationController
   private
 
   def set_account_params
+    @account = Account.find_by_account_id(params['account_id'])
     @account_id = params['account_id']
     @account_id_number = params['account_id'].to_s[4..-1]
+    @date_range = account_dates(@account_id_number)
   end
 
   def objective_name(objective)
@@ -626,5 +679,11 @@ class ApiController < ApplicationController
 
   def is_number? string
     true if Float(string) rescue false
+  end
+end
+
+class Array
+  def pluck(key)
+    map { |h| h[key] }
   end
 end

@@ -11,20 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160613155917) do
+ActiveRecord::Schema.define(version: 20160614011703) do
 
-  create_table "account_insights", force: :cascade do |t|
-    t.string   "account_id",     limit: 191
-    t.string   "account_name",   limit: 191
-    t.string   "age",            limit: 191
-    t.string   "gender",         limit: 191
-    t.datetime "created_at",                 null: false
-    t.datetime "updated_at",                 null: false
-    t.string   "actions",        limit: 191
-    t.string   "impressions",    limit: 191
-    t.float    "spend",          limit: 24
-    t.integer  "website_clicks", limit: 4
-    t.string   "date",           limit: 191
+  create_table "account_placement_actions", force: :cascade do |t|
+    t.string   "account_id",  limit: 191
+    t.string   "action_type", limit: 191
+    t.float    "value",       limit: 24
+    t.string   "placement",   limit: 191
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
   end
 
   create_table "account_placements", force: :cascade do |t|
@@ -57,6 +52,79 @@ ActiveRecord::Schema.define(version: 20160613155917) do
     t.datetime "updated_at",              null: false
     t.string   "age",         limit: 191
     t.string   "gender",      limit: 191
+  end
+
+  create_table "ad2_actions", force: :cascade do |t|
+    t.string   "account_id",  limit: 191
+    t.string   "action_type", limit: 191
+    t.float    "value",       limit: 24
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "objective",   limit: 191
+    t.string   "audience",    limit: 191
+    t.string   "format",      limit: 191
+    t.string   "edition",     limit: 191
+    t.string   "simple_name", limit: 191
+    t.string   "ad_id",       limit: 191
+  end
+
+  create_table "ad2_age_and_gender_actions", force: :cascade do |t|
+    t.string   "account_id",  limit: 191
+    t.string   "action_type", limit: 191
+    t.float    "value",       limit: 24
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "objective",   limit: 191
+    t.string   "age",         limit: 191
+    t.string   "gender",      limit: 191
+  end
+
+  create_table "ad2_placement_actions", force: :cascade do |t|
+    t.string   "account_id",  limit: 191
+    t.string   "action_type", limit: 191
+    t.float    "value",       limit: 24
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "objective",   limit: 191
+    t.string   "placement",   limit: 191
+  end
+
+  create_table "ad2_placements", force: :cascade do |t|
+    t.string   "account_id",  limit: 191
+    t.string   "campaign_id", limit: 191
+    t.string   "adset_id",    limit: 191
+    t.string   "ad_id",       limit: 191
+    t.string   "ad_name",     limit: 191
+    t.string   "objective",   limit: 191
+    t.string   "placement",   limit: 191
+    t.string   "impressions", limit: 191
+    t.float    "spend",       limit: 24
+    t.float    "frequency",   limit: 24
+    t.integer  "reach",       limit: 4
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+  end
+
+  create_table "ad2s", force: :cascade do |t|
+    t.string   "account_id",  limit: 191
+    t.string   "campaign_id", limit: 191
+    t.string   "adset_id",    limit: 191
+    t.string   "ad_id",       limit: 191
+    t.string   "ad_name",     limit: 191
+    t.string   "objective",   limit: 191
+    t.string   "placement",   limit: 191
+    t.string   "impressions", limit: 191
+    t.float    "spend",       limit: 24
+    t.float    "frequency",   limit: 24
+    t.integer  "reach",       limit: 4
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "date_start",  limit: 191
+    t.string   "date_stop",   limit: 191
+    t.string   "audience",    limit: 191
+    t.string   "format",      limit: 191
+    t.string   "edition",     limit: 191
+    t.string   "simple_name", limit: 191
   end
 
   create_table "ad_account_creatives", force: :cascade do |t|

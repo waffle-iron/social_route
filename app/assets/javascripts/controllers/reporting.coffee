@@ -40,15 +40,19 @@
 
       $scope.reporting = reportingData
 
-      createCpmChart(reportingData.cpm_cpr_placement)
+      createCpmByPlacementChart(reportingData.cpm_cpr_placement)
+      createCprByPlacementChart(reportingData.cpm_cpr_placement)
       createAudiencesChart(reportingData.audiences)
       createAgeGenderChart(reportingData.demographics.age_and_gender)
       createGeneralChart(reportingData.demographics.audience_breakdowns)
       createGeneralChartCPM(reportingData.demographics.audience_breakdowns)
+      createGeneralChartCPR(reportingData.demographics.audience_breakdowns)
       createAdFormatChart(reportingData.ad_formats)
+      createAdFormatCPRChart(reportingData.ad_formats)
       createAdChart(reportingData.ad_data)
+      createAdCPRChart(reportingData.ad_data)
 
-    createCpmChart = (cpmData) ->
+    createCpmByPlacementChart = (cpmData) ->
       cpmChart = {}
       cpmChart.type = 'ColumnChart'
       cpmChart.data = [
@@ -88,6 +92,47 @@
         colors: ['#0888C4']
 
       $scope.cpmChart = cpmChart
+
+    createCprByPlacementChart = (cprData) ->
+      cprByPlacementChart = {}
+      cprByPlacementChart.type = 'ColumnChart'
+      cprByPlacementChart.data = [
+        [
+         {type: 'string', label: 'Placement'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+         {type: 'number', label: 'CPR'}
+         {type: 'string', role: 'annotation'}
+        ]
+      ]
+
+      _.forEach cprData, (n) ->
+        cprByPlacementChart.data.push([
+          n.placement
+          {v: "<div style='width: 220px; padding: 20px;'>" +
+              "<strong style='color: #424242'><p style='font-size: 200%'>" + n.placement + "</p></strong></span><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM<br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(n.cpr) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+          n.cpr
+          currencyFilter(n.cpr)
+        ])
+
+      cprByPlacementChart.options =
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        tooltip: {isHtml: true}
+        focusTarget: 'category'
+        displayAnnotations: true
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' } }
+        vAxis: { title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency' }
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#0888C4']
+
+      $scope.cprByPlacementChart = cprByPlacementChart
 
     createAudiencesChart = (rawData) ->
       audiencesChart = {}
@@ -296,6 +341,53 @@
 
       $scope.generalChartCPM = generalChartCPM
 
+    createGeneralChartCPR = (generalData)->
+      generalChartCPR = {}
+      generalChartCPR.type = 'ColumnChart'
+      generalChartCPR.data = [
+        [
+         {type: 'string', label: 'Audience'}
+         {type: 'number', label: 'CPR'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+        ]
+      ]
+
+      _.forEach generalData, (data) ->
+
+        percentage_raw = Math.round((data.results/(_.sumBy(generalData, 'results'))*100)*10)/10
+
+        percentage = percentage_raw + '%'
+
+        generalChartCPR.data.push([
+          data.audience
+          data.cpr
+          currencyFilter(data.cpr) + ' CPR'
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.audience + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>Results <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpr']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+        ])
+
+      generalChartCPR.options =
+        title: 'CPR by Audience'
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
+        vAxis: {title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}}
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#0888C4']
+
+      $scope.generalChartCPR = generalChartCPR
+
     createAdFormatChart = (adFormatData)->
       adFormatChart = {}
       adFormatChart.type = 'ColumnChart'
@@ -338,6 +430,48 @@
 
       $scope.adFormatChart = adFormatChart
 
+    createAdFormatCPRChart = (adFormatData)->
+      adFormatCPRChart = {}
+      adFormatCPRChart.type = 'ColumnChart'
+      adFormatCPRChart.data = [
+        [
+         {type: 'string', label: 'Ad Format'}
+         {type: 'number', label: 'CPR'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+        ]
+      ]
+
+      _.forEach adFormatData, (data) ->
+        adFormatCPRChart.data.push([
+          data.format
+          data.cpr
+          currencyFilter(data.cpr) + ' CPR'
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.format + "</strong></span><br><br>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpr']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+        ])
+
+      adFormatCPRChart.options =
+        title: 'CPR by Ad Format'
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}}
+        vAxis: {title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}}
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#0888C4']
+
+      $scope.adFormatCPRChart = adFormatCPRChart
+
     createAdChart = (adData)->
       adDataChart = {}
       adDataChart.type = 'ColumnChart'
@@ -356,7 +490,8 @@
           data.cpm
           currencyFilter(data.cpm) + ' CPM'
           {v: "<div style='width: 160px; padding: 20px;'>" +
-              "<strong style='color: #424242'>" + data.simple_name + "</strong></span><br><br>" +
+              "<strong style='color: #424242'>" + data.simple_name + "</strong></span><br>" +
+              "<img src='" + data.best_cpm_creative.thumbnail_url + "' height='120' width='120'/>" +
               "<p style='font-size: 120%'><span style='color: #616161'><b>CPM <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpm']) + "<br></span></p>" +
               "</div>", p: {}
           }
@@ -379,5 +514,48 @@
         colors: ['#0888C4']
 
       $scope.adDataChart = adDataChart
+
+    createAdCPRChart = (adData)->
+      adDataCPRChart = {}
+      adDataCPRChart.type = 'ColumnChart'
+      adDataCPRChart.data = [
+        [
+         {type: 'string', label: 'Creative'}
+         {type: 'number', label: 'CPR'}
+         {type: 'string', role: 'annotation'}
+         {type: 'string', role: 'tooltip', p: {role: 'tooltip', html: true}}
+        ]
+      ]
+
+      _.forEach adData, (data) ->
+        adDataCPRChart.data.push([
+          data.simple_name
+          data.cpr
+          currencyFilter(data.cpr) + ' CPR'
+          {v: "<div style='width: 160px; padding: 20px;'>" +
+              "<strong style='color: #424242'>" + data.simple_name + "</strong></span><br>" +
+              "<img src='" + data.best_cpr_creative.thumbnail_url + "' height='120' width='120'/>" +
+              "<p style='font-size: 120%'><span style='color: #616161'><b>CPM <br><span style='font-size: 200%; color:#0888C4;'>" + currencyFilter(data['cpr']) + "<br></span></p>" +
+              "</div>", p: {}
+          }
+        ])
+
+      adDataCPRChart.options =
+        title: 'CPR by Creative'
+        titleTextStyle: {color: '#797575' }
+        displayExactValues: true
+        is3D: true
+        displayAnnotations: true
+        tooltip: {isHtml: true}
+        animation: { startup: true, duration: 1000, easing: 'in' }
+        focusTarget: 'datum'
+        legend: { position: 'none'}
+        hAxis: { title: '', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575' }}
+        vAxis: {title: 'CPR', titleTextStyle: {color: '#797575' }, textStyle: {color: '#797575'}, format: 'currency', viewWindowMode:'explicit', viewWindow: {min:0}}
+        chartArea: {width: '80%', height: '80%'}
+        crosshair: { trigger: 'both', orientation: 'both', color: 'grey', opacity: 0.5 }
+        colors: ['#0888C4']
+
+      $scope.adDataCPRChart = adDataCPRChart
 
 ]

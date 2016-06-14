@@ -13,12 +13,14 @@ module Importer
     puts "----------------------------------------------------".colorize(:yellow)
     puts "Start Import Rake Task... \n".colorize(:yellow)
     # build_accounts
-    # build_account_insights
     # build_account_creatives
     # build_ad_creative_lookup
-    build_campaigns
+    # build_campaigns
     # build_adsets
     # build_ads
+    build_ads_v2
+    # build_ads_v2_placement
+    # build_ads_v2_age_and_gender
     puts "----------------------------------------------------".colorize(:yellow)
     puts "\n\nImport sucessfull".colorize(:yellow)
     puts "#{Time.now - start}".to_s.colorize(:yellow)
@@ -51,98 +53,6 @@ module Importer
     end
 
     puts "| Accounts: #{Account.count}".colorize(:yellow)
-    puts "| Done".colorize(:yellow)
-  end
-
-  def self.build_account_insights
-    puts "---------------------------------------------------|".colorize(:yellow)
-    puts "| Building Account Insight Data                    |".colorize(:yellow)
-
-    account_insights = Array.new
-    account_actions = Array.new
-    account_placements = Array.new
-
-    account_ids.each do |account_id|
-      account_insight_columns = ['impressions','actions']
-
-      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
-                                     {:params => {'access_token' => ACCESS_TOKEN,
-                                                  'date_preset' => 'lifetime',
-                                                  'time_increment' => 1,
-                                                  'limit' => 1000,
-                                                  'fields' => account_insight_columns
-                                                  }}
-
-      raw_data = JSON.parse(http_response)['data']
-
-      raw_data.each do |account_insight|
-        account_insights.push({account_id:  account_id,
-                               impressions: account_insight['impressions']})
-
-        unless account_insight['actions'].nil?
-          account_insight['actions'].each do |action|
-            account_actions.push({action_type: action['action_type'],
-                                  value:       action['value'],
-                                  date:        account_insight['date_start'],
-                                  account_id:  account_id})
-          end
-        end
-      end
-
-      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
-                                     {:params => {'access_token' => ACCESS_TOKEN,
-                                                  'date_preset' => 'lifetime',
-                                                  'time_increment' => 1,
-                                                  'limit' => 1000,
-                                                  'breakdowns' => ['age', 'gender'],
-                                                  'fields' => account_insight_columns}}
-
-      raw_data = JSON.parse(http_response)['data']
-
-      raw_data.each do |account_insight|
-        unless account_insight['actions'].nil?
-          account_insight['actions'].each do |action|
-            account_actions.push({action_type: action['action_type'],
-                                  value:       action['value'],
-                                  date:        account_insight['date_start'],
-                                  account_id:  account_id,
-                                  age:         account_insight['age'],
-                                  gender:      account_insight['gender']})
-          end
-        end
-      end
-
-      http_response = RestClient.get "#{BASE_URL}/#{account_id}/insights",
-                                     {:params => {'access_token' => ACCESS_TOKEN,
-                                                  'date_preset' => 'lifetime',
-                                                  'breakdowns' => ['placement'],
-                                                  'limit' => 1000}}
-
-      raw_data = JSON.parse(http_response)['data']
-
-      raw_data.each do |account_placement|
-        account_placements.push({
-                                date_start:  account_placement['date_start'],
-                                date_stop:   account_placement['date_stop'],
-                                account_id:  account_placement['account_id'],
-                                impressions: account_placement['impressions'],
-                                spend:       account_placement['spend'],
-                                placement:   account_placement['placement']})
-      end
-    end
-
-    AccountInsight.delete_all
-    AccountInsight.bulk_insert values: account_insights
-
-    Action.delete_all
-    Action.bulk_insert values: account_actions
-
-    AccountPlacement.delete_all
-    AccountPlacement.bulk_insert values: account_placements
-
-    puts "| Account Insights: #{AccountInsight.count}".colorize(:yellow)
-    puts "| Account Actions: #{Action.count}".colorize(:yellow)
-    puts "| Account Placements: #{AccountPlacement.count}".colorize(:yellow)
     puts "| Done".colorize(:yellow)
   end
 
@@ -425,6 +335,159 @@ module Importer
     puts "Ads Created: #{Ad.count}".colorize(:yellow)
   end
 
+  def self.build_ads_v2
+    ads = Array.new
+    ad_actions = Array.new
+
+    ad_columns = ['account_id', 'campaign_id', 'adset_id', 'ad_id', 'ad_name',
+                  'objective', 'impressions', 'spend', 'frequency', 'reach',
+                  'date_start', 'date_stop', 'campaign_name', 'actions']
+
+    account_ids.each do |account_id|
+      raw_data = JSON.parse(RestClient.get "#{BASE_URL}/#{account_id}/insights",
+                                          {:params => {'access_token' => ACCESS_TOKEN,
+                                                       'date_preset' =>'lifetime',
+                                                       'level' => 'ad',
+                                                       'fields' => ad_columns,
+                                                       'limit' => 1000}})['data']
+
+      raw_data.each do |ad|
+        audience = extract_audience_name(ad['campaign_name'])
+        ad_format = extract_ad_format(ad['ad_name'])
+        simple_name = extract_ad_edition(ad['ad_name'])
+        edition = extract_ad_simple_name(ad['ad_name'])
+
+        ads.push({account_id:  ad['account_id'],
+                  campaign_id: ad['campaign_id'],
+                  adset_id:    ad['adset_id'],
+                  ad_id:       ad['ad_id'],
+                  ad_name:     ad['ad_name'],
+                  objective:   ad['objective'],
+                  impressions: ad['impressions'],
+                  spend:       ad['spend'],
+                  frequency:   ad['frequency'],
+                  reach:       ad['reach'],
+                  date_start:  ad['date_start'],
+                  date_stop:   ad['date_stop'],
+                  audience:    audience,
+                  format:      ad_format,
+                  simple_name: simple_name,
+                  edition:     edition
+                })
+
+        unless ad['actions'].nil?
+          ad['actions'].each do |action|
+            ad_actions.push({account_id:  ad['account_id'],
+                             ad_id:       ad['ad_id'],
+                             action_type: action['action_type'],
+                             value:       action['value'],
+                             objective:   ad['objective'],
+                             audience:    audience,
+                             format:      ad_format,
+                             simple_name: simple_name,
+                             edition:     edition
+                            })
+          end
+        end
+      end
+    end
+
+
+    Ad2.delete_all
+    Ad2.bulk_insert values: ads
+
+    Ad2Action.delete_all
+    Ad2Action.bulk_insert values: ad_actions
+
+    puts "Ads Created: #{Ad2.count}".colorize(:yellow)
+    puts "Ads Actions Created: #{Ad2Action.count}".colorize(:yellow)
+  end
+
+  def self.build_ads_v2_placement
+    ads = Array.new
+    ad_actions = Array.new
+
+    ad_columns = ['account_id', 'campaign_id', 'adset_id', 'ad_id', 'ad_name',
+                  'objective', 'impressions', 'spend', 'frequency', 'reach',
+                  'actions']
+
+    account_ids.each do |account_id|
+      raw_data = JSON.parse(RestClient.get "#{BASE_URL}/#{account_id}/insights",
+                                          {:params => {'access_token' => ACCESS_TOKEN,
+                                                       'date_preset' =>'lifetime',
+                                                       'level' => 'ad',
+                                                       'fields' => ad_columns,
+                                                       'breakdowns' => 'placement',
+                                                       'limit' => 1000}})['data']
+
+      raw_data.each do |ad|
+        ads.push({account_id:  ad['account_id'],
+                  campaign_id: ad['campaign_id'],
+                  adset_id:    ad['adset_id'],
+                  ad_id:       ad['ad_id'],
+                  ad_name:     ad['ad_name'],
+                  objective:   ad['objective'],
+                  impressions: ad['impressions'],
+                  spend:       ad['spend'],
+                  frequency:   ad['frequency'],
+                  reach:       ad['reach'],
+                  placement:   ad['placement']
+                })
+
+        unless ad['actions'].nil?
+          ad['actions'].each do |action|
+            ad_actions.push({account_id:  ad['account_id'],
+                             action_type: action['action_type'],
+                             value:       action['value'],
+                             objective:   ad['objective'],
+                             placement:   ad['placement']})
+          end
+        end
+      end
+    end
+
+
+    Ad2Placement.delete_all
+    Ad2Placement.bulk_insert values: ads
+
+    Ad2PlacementAction.delete_all
+    Ad2PlacementAction.bulk_insert values: ad_actions
+
+    puts "Ads Placement Created: #{Ad2Placement.count}".colorize(:yellow)
+    puts "Ads Placement Actions Created: #{Ad2PlacementAction.count}".colorize(:yellow)
+  end
+
+  def self.build_ads_v2_age_and_gender
+    ad_actions = Array.new
+
+    account_ids.each do |account_id|
+      raw_data = JSON.parse(RestClient.get "#{BASE_URL}/#{account_id}/insights",
+                                          {:params => {'access_token' => ACCESS_TOKEN,
+                                                       'date_preset' =>'lifetime',
+                                                       'level' => 'ad',
+                                                       'fields' => ['account_id', 'actions'],
+                                                       'breakdowns' => ['age', 'gender'],
+                                                       'limit' => 1000}})['data']
+
+      raw_data.each do |ad|
+        unless ad['actions'].nil?
+          ad['actions'].each do |action|
+            ad_actions.push({account_id:  ad['account_id'],
+                             action_type: action['action_type'],
+                             value:       action['value'],
+                             age:         ad['age'],
+                             gender:      ad['gender']})
+          end
+        end
+      end
+    end
+
+    Ad2AgeAndGenderAction.delete_all
+    Ad2AgeAndGenderAction.bulk_insert values: ad_actions
+
+    puts "Ads Age and Gender Actions Created: #{Ad2AgeAndGenderAction.count}".colorize(:yellow)
+  end
+
   private
 
   def self.account_ids
@@ -440,21 +503,73 @@ module Importer
     # Yogurtland
     # ['act_965932350088381']
 
+    # Robots Exhibit
+    ['act_1219093434772270']
+
     # Top 25
-    ['act_1219094644772149', 'act_1219093434772270', 'act_1219094751438805',
-     'act_1219094488105498', 'act_1219616701386610', 'act_1130403580307923',
-     'act_1139120289436252', 'act_1130403223641292', 'act_1253619597986320',
-     'act_1264926836855596', 'act_1374748469467327', 'act_937799526234997',
-     'act_1382151058724804', 'act_1382716158668218', 'act_1096482140366734',
-     'act_1382519912021865', 'act_923549197660030', 'act_256023237923821',
-     'act_1033441906670758', 'act_965932350088381', 'act_1380511028896841',
-     'act_1219093704772243', 'act_1219094968105450', 'act_944470208901262',
-     'act_331941523628320']
+    # ['act_1219094644772149', 'act_1219093434772270', 'act_1219094751438805',
+    #  'act_1219094488105498', 'act_1219616701386610', 'act_1130403580307923',
+    #  'act_1139120289436252', 'act_1130403223641292', 'act_1253619597986320',
+    #  'act_1264926836855596', 'act_1374748469467327', 'act_937799526234997',
+    #  'act_1382151058724804', 'act_1382716158668218', 'act_1096482140366734',
+    #  'act_1382519912021865', 'act_923549197660030', 'act_256023237923821',
+    #  'act_1033441906670758', 'act_965932350088381', 'act_1380511028896841',
+    #  'act_1219093704772243', 'act_1219094968105450', 'act_944470208901262',
+    #  'act_331941523628320']
 
   end
 
   def self.bar_count(string)
     string.count('|')
+  end
+
+  def self.extract_audience_name(campaign_name)
+    total_bars = campaign_name.count('|')
+
+    puts campaign_name
+    puts total_bars
+
+    if total_bars > 0
+      return campaign_name.split('|')[1].strip.gsub(/[\s,]/ ,"")
+    else
+      return "POST"
+    end
+  end
+
+  def self.extract_ad_format(ad_name)
+    total_bars = ad_name.count('|')
+
+    if total_bars == 4
+      return ad_name.split('|')[3].to_s.strip
+    elsif total_bars == 3
+      return ad_name.split('|')[2].to_s.strip
+    else
+      return nil
+    end
+  end
+
+  def self.extract_ad_edition(ad_name)
+    total_bars = ad_name.count('|')
+
+    if total_bars == 4
+      return ad_name.split('|')[0].to_s.strip
+    elsif total_bars == 3
+      return ad_name.split('|')[0].to_s.strip
+    else
+      return 'POST'
+    end
+  end
+
+  def self.extract_ad_simple_name(ad_name)
+    total_bars = ad_name.count('|')
+
+    if total_bars == 4
+      return ad_name.split('|')[4].to_s.strip
+    elsif total_bars == 3
+      return ad_name.split('|')[3].to_s.strip
+    else
+      return nil
+    end
   end
 
   def self.campaign_name_flagged(campaign_name)

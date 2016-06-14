@@ -113,6 +113,18 @@
     <div class='col s12 m12'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1'>
+          <span class='card-title'>CPR by Placement: {{reporting.date_range}}</span>
+          <br><br>
+           <div google-chart chart='cprByPlacementChart' style='height: 400px;'></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class='row'>
+    <div class='col s12 m12'>
+      <div class='card white darken-1'>
+        <div class='card-content grey-text text-darken-1'>
           <span class='card-title'>Audiences (CPM by Objective): {{reporting.date_range}}</span>
           <br><br>
           <div google-chart chart='audiencesChart' style='height: 400px;'></div>
@@ -132,6 +144,8 @@
           <div google-chart chart='generalChart' style='height: 400px;'></div>
           <br>
           <div google-chart chart='generalChartCPM' style='height: 400px;'></div>
+          <br>
+          <div google-chart chart='generalChartCPR' style='height: 400px;'></div>
         </div>
       </div>
     </div>
@@ -142,7 +156,9 @@
         <div class='card-content grey-text text-darken-1'>
           <span class='card-title'>Ad Formats: {{reporting.date_range}}</span>
           <br><br>
-           <div google-chart chart='adFormatChart' style='height: 400px;'></div>
+          <div google-chart chart='adFormatChart' style='height: 400px;'></div>
+          <br>
+          <div google-chart chart='adFormatCPRChart' style='height: 400px;'></div>
         </div>
       </div>
     </div>
@@ -153,7 +169,9 @@
         <div class='card-content grey-text text-darken-1'>
           <span class='card-title'>Ad Creative: {{reporting.date_range}}</span>
           <br><br>
-           <div google-chart chart='adDataChart' style='height: 400px;'></div>
+          <div google-chart chart='adDataChart' style='height: 400px;'></div>
+          <br>
+          <div google-chart chart='adDataCPRChart' style='height: 400px;'></div>
         </div>
 
       </div>
@@ -163,24 +181,24 @@
     <div class='col s12 m12'>
       <div class='card white darken-1'>
         <div class='card-content grey-text text-darken-1'>
-          <span class='card-title'>Best Performing Ad Creative: CUSTOMER
-LOYALTY: {{reporting.date_range}}</span>
+          <span class='card-title'>Best Performing Ad Creative: {{reporting.date_range}}</span>
           <br><br>
           <div class='row' style='padding-left: 50px;'>
-            <div class='col s6'>
-              <div ng-repeat='ad in reporting.ad_data'>
-                <div ng-if="ad.simple_name == 'CUSTOMER LOYALTY'">
-                  <img ng-if="ad.creative.image_url" src="{{ad.creative.image_url}}" alt="Smiley face" height="200">
-                </div>
-              </div>
+            <div class='col s4'>
+              <img ng-if="reporting.best_ad_creative.creative.image_url"
+                   src="{{reporting.best_ad_creative.creative.image_url}}"
+                   height="200">
+              <img ng-if="reporting.best_ad_creative.creative.thumbnail_url"
+                   src="{{reporting.best_ad_creative.creative.thumbnail_url}}"
+                   height="200">
             </div>
-            <div class='col s6'>
-              <b>{{ad.simple_name}}</b><br>
-              Results: {{ad.results}}<br>
-              CPR: {{ad.cpr}}<br>
-              Reach: {{ad.reach}}<br>
-              Impressions: {{ad.impressions}}<br>
-              CPM: {{ad.cpm}}
+            <div class='col s8'>
+              <b>{{reporting.best_ad_creative.simple_name}}</b><br>
+              Results: {{reporting.best_ad_creative.results | number:0}}<br>
+              CPR: ${{reporting.best_ad_creative.cpr | number:2}}<br>
+              Reach: {{reporting.best_ad_creative.reach | number:0}}<br>
+              Impressions: {{reporting.best_ad_creative.impressions | number:0}}<br>
+              CPM: ${{reporting.best_ad_creative.cpm | number:2}}
             </div>
           </div>
         </div>
