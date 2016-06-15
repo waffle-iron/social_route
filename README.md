@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/michaelDpierce/social_route.png?label=ready&title=Ready)](https://waffle.io/michaelDpierce/social_route)
 # The Social Route
 
 [![Throughput Graph](https://graphs.waffle.io/michaelDpierce/social_route/throughput.svg)](https://waffle.io/michaelDpierce/social_route/metrics/throughput)
